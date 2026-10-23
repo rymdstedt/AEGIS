@@ -1,0 +1,116 @@
+name: Windows release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Windows ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            python_arch: x64
+            runner: windows-2025
+          - arch: arm64
+            python_arch: arm64
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+          architecture: ${{ matrix.python_arch }}
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22.12.0"
+          architecture: ${{ matrix.arch }}
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version: "1.24.x"
+          cache: false
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m venv backend\.venv
+          backend\.venv\Scripts\python.exe -m pip install --disable-pip-version-check -r backend\requirements-dev.txt
+          npm.cmd ci --ignore-scripts
+          npm.cmd --prefix frontend ci --ignore-scripts
+
+      - name: Run Windows regression tests
+        shell: pwsh
+        env:
+          PYTHONPATH: backend
+        run: |
+          backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -v
+          backend\.venv\Scripts\python.exe -m ruff check backend lab
+
+      - name: Build native Windows package
+        shell: pwsh
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+        run: |
+          $buildId = Get-Date -Format "yyyyMMdd-HHmm"
+          .\scripts\build-windows.ps1 -Architecture "${{ matrix.arch }}" -BuildId $buildId
+
+      - name: Smoke-test frozen backend
+        shell: pwsh
+        run: |
+          $server = Resolve-Path backend\dist\aegis-server\aegis-server.exe
+          $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+          $listener.Start()
+          $port = ([System.Net.IPEndPoint]$listener.LocalEndpoint).Port
+          $listener.Stop()
+          $token = [guid]::NewGuid().ToString("N")
+          $instance = [guid]::NewGuid().ToString("N")
+          $process = Start-Process -FilePath $server -ArgumentList @(
+            "--port", "$port", "--auth-token", $token, "--instance-id", $instance,
+            "--allowed-origin", "http://127.0.0.1:$port", "--desktop"
+          ) -PassThru -NoNewWindow
+          try {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              Start-Sleep -Milliseconds 500
+              try {
+                $health = Invoke-RestMethod -Uri "http://127.0.0.1:$port/api/health" -Headers @{ Authorization = "Bearer $token" }
+                if ($health.status -eq "ok" -and $health.instance_id -eq $instance) {
+                  $ready = $true
+                  break
+                }
+              } catch {}
+            }
+            if (-not $ready) { throw "Frozen backend did not become ready" }
+          } finally {
+            if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force }
+          }
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: AEGIS-Windows-${{ matrix.arch }}
+          path: |
+            dist-windows/${{ matrix.arch }}-*/*.exe
+            dist-windows/${{ matrix.arch }}-*/*.zip
+            dist-windows/${{ matrix.arch }}-*/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14

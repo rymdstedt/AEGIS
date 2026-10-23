@@ -1,0 +1,6 @@
+AEGIS{BOREALIS_STATIC_DISCOVERY_71C9}
+AEGIS{LOG4J_VERSION_CORRELATION_44228}
+AEGIS{CREDENTIAL_CHAIN_COMPLETE_90AF}
+
+These are synthetic scoring flags. Finding a flag demonstrates evidence
+discovery only; it does not demonstrate code execution or exploitation.

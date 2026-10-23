@@ -1,0 +1,180 @@
+{
+  "name": "aegis",
+  "version": "2.1.0",
+  "description": "AEGIS — AI-Powered Autonomous Penetration Testing (Desktop App)",
+  "author": {
+    "name": "Andreas",
+    "email": "andreas@local"
+  },
+  "homepage": "https://github.com/rymdstedt/aegis",
+  "desktopName": "aegis.desktop",
+  "main": "electron/main.js",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "postinstall": "echo 'For desktop packaging: npm run dist (after ensuring backend/.venv and frontend deps)'",
+    "build:ui": "cd frontend && npm run build",
+    "build:server": "bash scripts/build-server.sh",
+    "build:server:win": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-server-windows.ps1",
+    "dist": "node scripts/release-preflight.js && export BUILD_ID=$(date +%Y%m%d-%H%M) && npm run build:ui && npm run build:server && electron-builder --mac --arm64 -c.artifactName='AEGIS-${version}-'${BUILD_ID}'-${arch}.${ext}'",
+    "dist:dev": "npm run build:ui && npm run build:server && node scripts/build-mac-dev.js",
+    "dist:linux": "BUILD_ID=$(date +%Y%m%d-%H%M); npm run build:ui && npm run build:server && electron-builder --linux -c.artifactName='AEGIS-${version}-'${BUILD_ID}'-${arch}.${ext}'",
+    "dist:linux:dev": "BUILD_ID=$(date +%Y%m%d-%H%M); npm run build:ui && npm run build:server && electron-builder --linux --dir -c.artifactName='AEGIS-${version}-'${BUILD_ID}'-${arch}.${ext}'",
+    "dist:linux:container": "bash scripts/build-linux-container.sh x64",
+    "dist:win:x64": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-windows.ps1 -Architecture x64",
+    "dist:win:arm64": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-windows.ps1 -Architecture arm64",
+    "start:desktop": "electron .",
+    "test": "npm run test:python && npm run test:electron && npm run test:ui",
+    "test:python": "PYTHONPATH=backend backend/.venv/bin/python -m unittest discover -s backend/tests -v",
+    "test:electron": "node --test tests/electron/*.test.js",
+    "test:ui": "npm --prefix frontend run build"
+  },
+  "build": {
+    "appId": "ai.aegis.pentest",
+    "productName": "AEGIS",
+    "artifactName": "AEGIS-${version}-${arch}.${ext}",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.developer-tools",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "extendInfo": {
+        "NSLocalNetworkUsageDescription": "AEGIS needs local network access to test only the hosts and networks you explicitly authorize.",
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false,
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "127.0.0.1": {
+              "NSIncludesSubdomains": false,
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            },
+            "localhost": {
+              "NSIncludesSubdomains": false,
+              "NSTemporaryExceptionAllowsInsecureHTTPLoads": true
+            }
+          }
+        }
+      },
+      "notarize": true
+    },
+    "dmg": {
+      "window": {
+        "width": 540,
+        "height": 360
+      },
+      "contents": [
+        {
+          "x": 130,
+          "y": 120,
+          "type": "file"
+        },
+        {
+          "x": 410,
+          "y": 120,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "tar.gz"
+      ],
+      "category": "Utility",
+      "executableName": "aegis",
+      "icon": "build/icon.png",
+      "syncDesktopName": true,
+      "maintainer": "Andreas <andreas@local>"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "build/icon.png",
+      "requestedExecutionLevel": "asInvoker",
+      "verifyUpdateCodeSignature": true
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "AEGIS"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "libgbm1",
+        "libasound2t64 | libasound2",
+        "libcups2",
+        "libdbus-1-3",
+        "libxkbcommon0",
+        "libxcb1",
+        "libx11-6",
+        "libxcomposite1",
+        "libxdamage1",
+        "libxext6",
+        "libxfixes3",
+        "libxrandr2",
+        "libexpat1",
+        "nmap",
+        "curl",
+        "dnsutils | bind9-dnsutils",
+        "whois",
+        "snmp",
+        "iputils-ping"
+      ],
+      "recommends": [
+        "enum4linux",
+        "ssh-audit"
+      ],
+      "priority": "optional",
+      "packageCategory": "utils"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/dist/aegis-server",
+        "to": "aegis-server",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/aegis-server"
+    ],
+    "afterPack": "scripts/after-pack.js"
+  },
+  "devDependencies": {
+    "electron": "^44.1.0",
+    "electron-builder": "^26.15.3"
+  }
+}

@@ -1,0 +1,14 @@
+diff --git a/lib/target.rb b/lib/target.rb
+index 44d84da..7a35f7b 100644
+--- a/lib/target.rb
++++ b/lib/target.rb
+@@ -306,6 +306,8 @@ class Target
+       # i wont worry about certificates, verfication, etc
+       if @uri.class == URI::HTTPS
+         http.use_ssl = true
+-        OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers] = 'TLSv1:TLSv1.1:TLSv1.2:SSLv3:SSLv2'
++        # Ruby 4 freezes OpenSSL::SSL::SSLContext::DEFAULT_PARAMS. Mutating the
++        # process-wide defaults crashes before the request is sent, and these
++        # protocol names are not a valid modern cipher list in any case.
+         http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+       end

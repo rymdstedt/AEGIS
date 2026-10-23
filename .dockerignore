@@ -1,0 +1,17 @@
+.git
+.agents
+.codex
+.DS_Store
+node_modules
+frontend/node_modules
+frontend/dist
+backend/.venv
+backend/build
+backend/dist
+dist-electron
+dist-linux
+dist-windows
+__pycache__
+*.pyc
+*.pyo
+*.log

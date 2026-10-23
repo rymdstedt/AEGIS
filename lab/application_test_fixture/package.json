@@ -1,0 +1,7 @@
+{
+  "name": "northstar-desktop-lab",
+  "version": "0.0.0-lab",
+  "private": true,
+  "description": "Intentionally vulnerable static-analysis fixture",
+  "main": "main.js"
+}

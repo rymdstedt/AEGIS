@@ -1,0 +1,23 @@
+services:
+  aegis-vulnlab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:18080:18080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,noexec,nosuid,nodev
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 128m
+    restart: "no"
+    networks:
+      - isolated_lab
+
+networks:
+  isolated_lab:
+    internal: true

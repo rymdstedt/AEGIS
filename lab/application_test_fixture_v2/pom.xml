@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>invalid.northstar.lab</groupId>
+  <artifactId>borealis-vault-fixture</artifactId>
+  <version>0.0.0-lab</version>
+  <dependencies>
+    <!-- Intentionally old version for CVE-2021-44228 detection exercises. -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.14.1</version>
+    </dependency>
+  </dependencies>
+</project>

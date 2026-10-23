@@ -1,0 +1,70 @@
+PROPRIETARY SOFTWARE LICENSE
+
+Sextant
+Copyright (c) 2026 Andreas Lindstedt. All rights reserved.
+
+1. Ownership
+
+   This software, including its source code, object code, documentation, templates,
+   example data, generated document layouts and all associated files (together, the
+   "Software"), is the exclusive property of Andreas Lindstedt (the "Owner") and is
+   protected by copyright and other intellectual property laws.
+
+2. No license granted
+
+   No license or right of any kind is granted to any person or entity other than the
+   Owner, whether expressly, by implication, by estoppel or otherwise. Access to the
+   Software, for example through a repository, a shared link, a container image or a
+   copy, does not grant any right to use it.
+
+3. Prohibited without the Owner's prior written permission
+
+   Without the prior written permission of the Owner, no one may, in whole or in part:
+
+   a) use, run, install or execute the Software;
+   b) copy, reproduce, download, mirror or store the Software;
+   c) modify, adapt, translate or create derivative works of the Software;
+   d) distribute, publish, sublicense, sell, rent, lease, lend or otherwise make the
+      Software available to any third party, including as a hosted or managed service;
+   e) reverse engineer, decompile or disassemble the Software, except to the extent
+      that applicable law expressly permits this despite this restriction;
+   f) remove or alter any copyright, trademark or proprietary notice in the Software;
+   g) use the Software or any part of it to train, evaluate or improve machine learning
+      models or to build a competing product.
+
+4. Exclusive rights of the Owner
+
+   Only the Owner may use, modify, sell, license and distribute the Software. Any
+   permission given to a third party must be in writing, signed by the Owner, and is
+   limited to its stated scope. Unless such a written permission says otherwise, it is
+   personal, non-exclusive, non-transferable and revocable.
+
+5. Third-party components
+
+   The Software uses or bundles third-party components that remain subject to their
+   own licenses, including the Open Sans font (SIL Open Font License 1.1, see
+   src/sextant/themes/_fonts/open-sans/OFL.txt) and the Python packages listed in
+   pyproject.toml. Nothing in this license restricts rights granted by those licenses
+   for those components. Logos and brand assets in src/sextant/themes/ belong to their
+   respective owners and are not licensed by this document.
+
+6. Disclaimer of warranty and limitation of liability
+
+   The Software is provided "as is", without warranty of any kind, express or implied,
+   including the warranties of merchantability, fitness for a particular purpose and
+   non-infringement. To the maximum extent permitted by law, the Owner is not liable
+   for any damages arising from the use of, or inability to use, the Software.
+
+7. Termination and enforcement
+
+   Any use of the Software in breach of this license is unauthorized and automatically
+   terminates any permission that may have been granted. The Owner may enforce all
+   rights and remedies available under applicable law.
+
+8. Governing law
+
+   This license is governed by the laws of Sweden. Disputes shall be resolved by the
+   Swedish courts, with the Stockholm District Court (Stockholms tingsrätt) as the
+   court of first instance.
+
+For permission requests, contact: Andreas Lindstedt.

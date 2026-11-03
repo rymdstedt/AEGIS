@@ -26,6 +26,7 @@ from application.llm import (
     ApplicationLLMPartialAnswer,
     ask_application_llm,
 )
+from exposure.censys import analyze_censys_export
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -84,6 +85,12 @@ class CiscoAdvisoryLookupRequest(BaseModel):
     # can never echo a malformed token value.
     access_token: SecretStr
     version: str | None = Field(default=None, min_length=1, max_length=80)
+
+
+class CensysExposureRequest(BaseModel):
+    filename: str = Field(min_length=1, max_length=255)
+    content: str
+    scope: str = Field(min_length=1, max_length=4_000)
 
 
 def _get_application_service() -> ApplicationResearchService:
@@ -672,6 +679,16 @@ async def authenticate_local_api(request: Request, call_next):
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "agents": len(active_agents), "instance_id": INSTANCE_ID}
+
+
+@app.post("/api/exposure/censys/analyze")
+async def analyze_censys_exposure(payload: CensysExposureRequest):
+    try:
+        return await asyncio.to_thread(
+            analyze_censys_export, payload.filename, payload.content, payload.scope,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/api/scan/recovery")

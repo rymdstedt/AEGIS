@@ -65,6 +65,12 @@ def _rule(
 
 
 PRODUCT_FINGERPRINT_RULES: tuple[ProductFingerprintRule, ...] = (
+    _rule(
+        "danfoss-storeview", "industrial_control", "Danfoss", "StoreView",
+        "danfoss", "storeview",
+        r"\bDanfoss\s+StoreView\b", r"\bStoreView\s+Web\s*[-|:]\s*Danfoss\b",
+        priority=132, cve_searchable=False,
+    ),
     # Hypervisors and virtualization control planes.
     _rule(
         "vmware-vcenter", "hypervisor_management", "VMware", "VMware vCenter Server",
@@ -484,6 +490,7 @@ PRODUCT_FINGERPRINT_RULES: tuple[ProductFingerprintRule, ...] = (
 
 
 VENDOR_PATTERNS: tuple[tuple[str, str], ...] = (
+    ("Danfoss", r"\bDanfoss\b"),
     ("VMware", r"\b(?:VMware|vSphere)\b"),
     ("Proxmox", r"\b(?:Proxmox|PVEAuthCookie)\b"),
     ("Microsoft", r"\b(?:Microsoft|Windows\s+Server|Hyper-V)\b"),

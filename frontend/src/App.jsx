@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ApplicationResearch from "./ApplicationResearch";
+import ExposureInventory from "./ExposureInventory";
 
 const fragmentToken = new URLSearchParams(window.location.hash.slice(1)).get("token") || "";
 let sessionToken = "";
@@ -383,7 +384,7 @@ function EvidenceTrail({ snapshot, coverage, decision, onRetry, onContinue, onRe
   );
 }
 
-function NetworkAssessment({ onOpenApplicationResearch }) {
+function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory }) {
   const agent = useAgent();
   const {
     loot,
@@ -663,12 +664,12 @@ function NetworkAssessment({ onOpenApplicationResearch }) {
       {showConfig && (
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px 0" }}>
           <div style={{ width: 560, padding: 32, background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 12, animation: "slideIn 0.3s ease" }}>
-            <div role="tablist" aria-label="Start menu" style={{ display: "flex", gap: 4, margin: "-16px -16px 22px", padding: 4, background: theme.bg, borderRadius: 8 }}>
+            <div role="tablist" aria-label="Start menu" style={{ display: "flex", flexWrap: "wrap", gap: 4, margin: "-16px -16px 22px", padding: 4, background: theme.bg, borderRadius: 8 }}>
               <button
                 role="tab"
                 aria-selected="true"
                 type="button"
-                style={{ flex: 1, padding: "8px 12px", background: theme.accentGlow, color: theme.accent, border: `1px solid ${theme.accent}`, borderRadius: 6, fontWeight: 700 }}
+                style={{ flex: "1 1 115px", padding: "8px 12px", background: theme.accentGlow, color: theme.accent, border: `1px solid ${theme.accent}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
               >
                 ⚡ New Engagement
               </button>
@@ -677,7 +678,7 @@ function NetworkAssessment({ onOpenApplicationResearch }) {
                 aria-selected="false"
                 type="button"
                 onClick={() => { setActiveTab("diagnostics"); setShowConfig(false); }}
-                style={{ flex: 1, padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700 }}
+                style={{ flex: "1 1 115px", padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
               >
                 🧰 Diagnostics & Tools
               </button>
@@ -686,9 +687,18 @@ function NetworkAssessment({ onOpenApplicationResearch }) {
                 aria-selected="false"
                 type="button"
                 onClick={onOpenApplicationResearch}
-                style={{ flex: 1, padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700 }}
+                style={{ flex: "1 1 115px", padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
               >
                 ◫ Application Research
+              </button>
+              <button
+                role="tab"
+                aria-selected="false"
+                type="button"
+                onClick={onOpenExposureInventory}
+                style={{ flex: "1 1 115px", padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
+              >
+                ◉ Exposure Inventory
               </button>
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}><span style={{ color: theme.accent }}>⚡</span> New Engagement</h2>
@@ -1182,6 +1192,15 @@ function NetworkAssessment({ onOpenApplicationResearch }) {
 
 export default function App() {
   const [workspace, setWorkspace] = useState("network");
+  if (workspace === "exposure") {
+    return (
+      <ExposureInventory
+        apiFetch={apiFetch}
+        theme={theme}
+        onBack={() => setWorkspace("network")}
+      />
+    );
+  }
   if (workspace === "application") {
     return (
       <ApplicationResearch
@@ -1191,5 +1210,8 @@ export default function App() {
       />
     );
   }
-  return <NetworkAssessment onOpenApplicationResearch={() => setWorkspace("application")} />;
+  return <NetworkAssessment
+    onOpenApplicationResearch={() => setWorkspace("application")}
+    onOpenExposureInventory={() => setWorkspace("exposure")}
+  />;
 }

@@ -13,6 +13,7 @@ from tools.executor import _web_identity_records
 
 class ProductFingerprintRegistryTests(unittest.TestCase):
     CASES = (
+        ("Danfoss StoreView Web", "danfoss-storeview", "", "storeview"),
         ("VMware ESXi 8.0.3 build-24585383", "vmware-esxi", "8.0.3", "esxi"),
         ("vSphere Client - VMware vCenter Server 8.0.2", "vmware-vcenter", "8.0.2", "vcenter_server"),
         ("Proxmox Virtual Environment pve-manager/8.2.4", "proxmox-ve", "8.2.4", "pve-manager"),
@@ -126,6 +127,18 @@ class ProductFingerprintRegistryTests(unittest.TestCase):
             identify_product_fingerprints("Copyright ZTE Corporation", source="fixture"),
             [],
         )
+        self.assertEqual(identify_vendor("Danfoss refrigeration products"), "Danfoss")
+        self.assertEqual(
+            identify_product_fingerprints("Danfoss refrigeration products", source="fixture"),
+            [],
+        )
+
+    def test_storeview_identity_is_inventory_only(self):
+        records = _web_identity_records(
+            "<html><title>Danfoss StoreView Web</title></html>", {},
+        )
+        self.assertEqual(records[0]["fingerprint_id"], "danfoss-storeview")
+        self.assertFalse(records[0]["cve_searchable"])
 
     def test_web_records_emit_only_bounded_safe_metadata(self):
         records = _web_identity_records(

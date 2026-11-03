@@ -73,6 +73,13 @@ const args = [
   '-c.mac.timestamp=none',
   `-c.mac.identity=${identity}`,
 ];
+const electronCache = process.env.AEGIS_ELECTRON_CACHE_DIR;
+if (electronCache) {
+  if (!path.isAbsolute(electronCache)) {
+    throw new Error('AEGIS_ELECTRON_CACHE_DIR must be an absolute path.');
+  }
+  args.push(`-c.electronDownload.cache=${electronCache}`);
+}
 if (outputSubdirectory) {
   args.push(`-c.directories.output=${outputRoot}`);
 }

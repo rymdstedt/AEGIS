@@ -239,6 +239,10 @@ architecture, bundles native Windows scanner helpers, produces an assisted NSIS
 installer plus a portable ZIP, and writes `SHA256SUMS` under `dist-windows/`.
 Stale helpers are removed before every build so binaries from another OS or CPU
 architecture cannot leak into the package.
+Windows ARM64 does not currently bundle Naabu because its packet-capture
+dependency does not compile on the ARM64 runner and upstream does not publish
+an ARM64 archive. AEGIS uses its Nmap discovery fallback when Nmap is
+available; the passive exposure inventory does not require either tool.
 
 The `Windows release` GitHub Actions workflow builds and smoke-tests x64 on
 `windows-2025` and ARM64 on `windows-11-arm`. Configure `WINDOWS_CSC_LINK` and

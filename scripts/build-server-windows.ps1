@@ -111,20 +111,24 @@ try {
     }
 }
 
-# Naabu and httpx do not publish Windows ARM64 archives. Build both pinned Go
-# modules natively on each runner so Windows ARM never receives x64 scanner
-# helpers hidden inside an otherwise-native package.
+# Naabu and httpx do not publish Windows ARM64 archives. Build httpx natively
+# on ARM64. Naabu's packet-capture dependency does not compile on the ARM64
+# runner, so leave it absent and let AEGIS select its Nmap discovery fallback
+# when Nmap is available. Never hide an x64 helper in an ARM64 package.
 $go = Get-Command "go.exe" -ErrorAction SilentlyContinue
 if (-not $go) {
-    throw "Go is required to build the pinned native naabu and httpx helpers."
+    throw "Go is required to build the pinned native Windows scanner helpers."
 }
 $previousGoBin = $env:GOBIN
 $env:GOBIN = $toolRoot
 try {
-    $goTools = @(
-        @{ Name = "naabu"; Module = "github.com/projectdiscovery/naabu/v2/cmd/naabu@v2.6.1" },
-        @{ Name = "httpx"; Module = "github.com/projectdiscovery/httpx/cmd/httpx@v1.12.0" }
-    )
+    $goTools = @()
+    if ($Architecture -eq "x64") {
+        $goTools += @{ Name = "naabu"; Module = "github.com/projectdiscovery/naabu/v2/cmd/naabu@v2.6.1" }
+    } else {
+        Write-Warning "Naabu is not bundled on Windows ARM64; install Nmap for active port discovery fallback."
+    }
+    $goTools += @{ Name = "httpx"; Module = "github.com/projectdiscovery/httpx/cmd/httpx@v1.12.0" }
     foreach ($tool in $goTools) {
         & $go.Source install $tool.Module
         if ($LASTEXITCODE -ne 0) { throw "Go build failed for $($tool.Name)" }

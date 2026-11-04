@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 const http = require('http');
@@ -7,6 +7,7 @@ const net = require('net');
 const crypto = require('crypto');
 const os = require('os');
 const { claimSingleInstance, revealWindow } = require('./single-instance');
+const { createCredentialStore, SUPPORTED_PROVIDERS } = require('./credential-store');
 
 let mainWindow = null;
 let serverProcess = null;
@@ -14,6 +15,7 @@ let internalPort = null;
 let isQuitting = false;
 let backendReady = false;
 let focusWhenWindowReady = false;
+let providerCredentialStore = null;
 const isPrimaryInstance = claimSingleInstance(
   app,
   () => mainWindow,
@@ -275,6 +277,41 @@ function validApplicationChatHistory(value) {
       && item.content.length >= 1
       && item.content.length <= 1200
     ));
+}
+
+function registerProviderCredentialIpc() {
+  providerCredentialStore = providerCredentialStore || createCredentialStore({ app, safeStorage });
+
+  ipcMain.removeHandler('aegis:provider-credentials:load');
+  ipcMain.handle('aegis:provider-credentials:load', async (event) => {
+    if (!applicationRendererAllowed(event)) {
+      throw new Error('Provider credential request was rejected');
+    }
+    return providerCredentialStore.load();
+  });
+
+  ipcMain.removeHandler('aegis:provider-credentials:save');
+  ipcMain.handle('aegis:provider-credentials:save', async (event, value) => {
+    if (!applicationRendererAllowed(event) || !value || typeof value !== 'object') {
+      throw new Error('Provider credential update was rejected');
+    }
+    const updates = {};
+    for (const provider of SUPPORTED_PROVIDERS) {
+      if (value[provider] !== undefined) updates[provider] = value[provider];
+    }
+    if (!Object.keys(updates).length) {
+      throw new Error('No supported provider credential was supplied');
+    }
+    return providerCredentialStore.save(updates);
+  });
+
+  ipcMain.removeHandler('aegis:provider-credentials:clear');
+  ipcMain.handle('aegis:provider-credentials:clear', async (event, provider = 'all') => {
+    if (!applicationRendererAllowed(event)) {
+      throw new Error('Provider credential removal was rejected');
+    }
+    return providerCredentialStore.clear(String(provider || 'all'));
+  });
 }
 
 function registerApplicationResearchIpc() {
@@ -816,6 +853,7 @@ async function launch() {
   }
 
   registerApplicationResearchIpc();
+  registerProviderCredentialIpc();
   backendReady = true;
   createMainWindow();
 

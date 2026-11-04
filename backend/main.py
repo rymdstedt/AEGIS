@@ -103,6 +103,7 @@ class OwnedExposureRequest(BaseModel):
 class WorldExposureRequest(BaseModel):
     query: str = Field(min_length=1, max_length=160)
     netlas_key: SecretStr | None = None
+    start: int = Field(default=0, ge=0, le=9_980, multiple_of=20)
 
 
 def _get_application_service() -> ApplicationResearchService:
@@ -721,6 +722,7 @@ async def search_world_exposure(payload: WorldExposureRequest):
         return await asyncio.to_thread(
             search_world, payload.query,
             netlas_key=payload.netlas_key.get_secret_value() if payload.netlas_key else "",
+            start=payload.start,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

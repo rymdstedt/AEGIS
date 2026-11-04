@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import HomeButton from "./HomeButton";
 
 function formatBytes(value) {
   const bytes = Number(value || 0);
@@ -660,7 +661,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
 
       <header style={{ height: 58, padding: "0 22px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${theme.border}`, background: "linear-gradient(180deg,#111827 0%,#0a0e17 100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={onBack} aria-label="Back to live assessment" style={{ width: 32, height: 32, borderRadius: 6, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, fontSize: 17 }}>←</button>
+          <HomeButton onClick={onBack} theme={theme} compact />
           <div style={{ fontSize: 21, fontWeight: 800 }}>AEGIS</div>
           <div style={{ width: 1, height: 22, background: theme.border }} />
           <div>

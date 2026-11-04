@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import ExposureLive from "./ExposureLive";
+import HomeButton from "./HomeButton";
 
 const MAX_FILE_BYTES = 2_000_000;
 const GROUPS = ["All", "OT / control", "Management candidate", "Other service"];
@@ -66,7 +67,7 @@ export default function ExposureInventory({ apiFetch, theme, onBack }) {
   return (
     <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <button type="button" onClick={onBack} style={{ ...buttonStyle, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, marginBottom: 18 }}>← Back to start</button>
+        <HomeButton onClick={onBack} theme={theme} style={{ marginBottom: 18 }} />
         <h1 style={{ fontSize: 24, margin: "0 0 8px" }}>Exposure Inventory</h1>
         <button type="button" onClick={() => { setMode("owned"); setResult(null); setError(""); }} style={{ ...buttonStyle, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, marginBottom: 14 }}>← Automatic checks</button>
         <p style={{ color: theme.textDim, lineHeight: 1.5, margin: "0 0 20px" }}>

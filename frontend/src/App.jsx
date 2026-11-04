@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ApplicationResearch from "./ApplicationResearch";
 import ExposureInventory from "./ExposureInventory";
+import HomeButton from "./HomeButton";
 
 const fragmentToken = new URLSearchParams(window.location.hash.slice(1)).get("token") || "";
 let sessionToken = "";
@@ -912,7 +913,10 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               {activeTab === "diagnostics" && (
                 <div style={{ padding: 20, height: "100%", overflow: "auto", fontSize: 13 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <b>Environment & Diagnostics</b>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <HomeButton onClick={() => { setActiveTab("terminal"); setShowConfig(true); }} theme={theme} compact />
+                      <b>Environment & Diagnostics</b>
+                    </div>
                     <button onClick={refreshEnvironment} style={{ ...pillBtn(theme.accent), fontSize: 11 }}>Refresh</button>
                   </div>
 

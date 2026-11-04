@@ -70,7 +70,127 @@ class PassiveLookupTests(unittest.TestCase):
         self.assertNotIn("secret-token-value", str(result))
         self.assertNotIn("netlas-token-value", str(result))
 
-    def test_world_search_returns_safe_metadata_only_and_one_page(self):
+    def test_censys_host_cves_include_service_context_without_claiming_confirmation(self):
+        def respond(request):
+            if request.url.host == "app.netlas.io":
+                return httpx.Response(200, json={"ip": "8.8.8.8", "ports": []})
+            if request.url.host == "internetdb.shodan.io":
+                return httpx.Response(200, json={"ip": "8.8.8.8", "ports": [], "vulns": []})
+            if request.url.host == "api.platform.censys.io":
+                return httpx.Response(200, json={"result": {"resource": {
+                    "ip": "8.8.8.8",
+                    "services": [{
+                        "port": 443,
+                        "protocol": "HTTP",
+                        "vulns": [{
+                            "id": "CVE-2025-54321",
+                            "severity": "HIGH",
+                            "kev": True,
+                            "metrics": {"cvss_v31": {"score": 8.8}},
+                        }],
+                    }],
+                }}})
+            raise AssertionError("unexpected request")
+
+        with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+            with patch("exposure.live._kev_catalog", return_value={"CVE-2025-54321": {}}):
+                result = check_owned(
+                    "8.8.8.8", censys_pat="secret-token-value", client=client,
+                )
+        record = result["records"][2]
+        self.assertEqual(record["cve_data_status"], "reported")
+        self.assertEqual(record["cve_candidates"], ["CVE-2025-54321"])
+        self.assertEqual(record["kev_matches"], ["CVE-2025-54321"])
+        self.assertEqual(record["vulnerabilities"], [{
+            "id": "CVE-2025-54321",
+            "source": "Censys Platform",
+            "service_port": 443,
+            "service_protocol": "HTTP",
+            "severity": "HIGH",
+            "cvss_score": 8.8,
+            "cvss_version": "3.1",
+            "provider_kev": True,
+            "cisa_kev": True,
+            "basis": "Censys associated the observed service software with this CVE by CPE.",
+        }])
+        self.assertIn("unverified", result["interpretation"])
+
+    def test_censys_host_marks_missing_cve_fields_as_not_provided(self):
+        def respond(request):
+            if request.url.host == "app.netlas.io":
+                return httpx.Response(200, json={"ip": "8.8.8.8", "ports": []})
+            if request.url.host == "internetdb.shodan.io":
+                return httpx.Response(200, json={"ip": "8.8.8.8", "ports": []})
+            if request.url.host == "api.platform.censys.io":
+                return httpx.Response(200, json={"result": {"resource": {
+                    "ip": "8.8.8.8", "services": [{"port": 443, "protocol": "HTTP"}],
+                }}})
+            raise AssertionError("unexpected request")
+
+        with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+            result = check_owned(
+                "8.8.8.8", censys_pat="secret-token-value", client=client,
+            )
+        record = result["records"][2]
+        self.assertEqual(record["cve_data_status"], "not_provided")
+        self.assertEqual(record["vulnerabilities"], [])
+        self.assertIn("plan", record["note"])
+
+    def test_censys_software_uses_bounded_independent_cve_index_fallback(self):
+        searches = []
+
+        def respond(request):
+            if request.url.host == "app.netlas.io":
+                return httpx.Response(200, json={"ip": "8.8.8.8", "ports": []})
+            if request.url.host == "internetdb.shodan.io":
+                return httpx.Response(200, json={"ip": "8.8.8.8", "ports": []})
+            if request.url.host == "api.platform.censys.io":
+                return httpx.Response(200, json={"result": {"resource": {
+                    "ip": "8.8.8.8",
+                    "services": [
+                        {"port": 443 + index, "protocol": "HTTP", "software": [{
+                            "vendor": f"Vendor {index}", "product": f"Product {index}",
+                            "version": "1.2.3",
+                        }]}
+                        for index in range(4)
+                    ],
+                }}})
+            raise AssertionError("unexpected request")
+
+        async def search(query, *, vendor, product, limit):
+            searches.append((query, vendor, product, limit))
+            index = vendor.rsplit(" ", 1)[-1]
+            return {
+                "source": "CIRCL Vulnerability-Lookup exact product index",
+                "candidates": [{
+                    "cve_id": f"CVE-2025-1234{index}",
+                    "database": "CIRCL Vulnerability-Lookup (cvelistv5)",
+                    "cvss": {"score": 7.5, "version": "3.1", "severity": "high"},
+                }],
+            }
+
+        with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+            with patch("exposure.live.search_cve_candidates", side_effect=search), \
+                    patch("exposure.live._kev_catalog", return_value={}):
+                result = check_owned(
+                    "8.8.8.8", censys_pat="secret-token-value", client=client,
+                )
+        self.assertEqual(len(searches), 3)
+        self.assertTrue(all(item[-1] == 8 for item in searches))
+        record = result["records"][2]
+        self.assertEqual(record["cve_data_status"], "reported")
+        self.assertEqual(len(record["vulnerabilities"]), 3)
+        self.assertEqual(record["vulnerabilities"][0]["source"],
+                         "CIRCL Vulnerability-Lookup (cvelistv5)")
+        self.assertIn("installed-version applicability is unverified",
+                      record["vulnerabilities"][0]["basis"])
+        self.assertFalse(record["vulnerabilities"][0]["cisa_kev"])
+        self.assertEqual(result["cve_product_enrichment"], {
+            "status": "complete", "products_checked": 3,
+            "candidates_added": 3, "warnings": [],
+        })
+
+    def test_world_search_returns_safe_metadata_for_requested_page(self):
         captured = []
         def respond(request):
             captured.append(request)
@@ -81,12 +201,18 @@ class PassiveLookupTests(unittest.TestCase):
                 {"data": {"ip": "192.0.2.2", "port": 502, "protocol": "modbus"}},
             ]})
         with httpx.Client(transport=httpx.MockTransport(respond)) as client:
-            result = search_world('http.title:"Proxmox"', netlas_key="netlas-token-value", client=client)
+            result = search_world(
+                'http.title:"Proxmox"', netlas_key="netlas-token-value",
+                start=40, client=client,
+            )
         self.assertEqual(len(captured), 1)
         self.assertEqual(captured[0].url.host, "app.netlas.io")
-        self.assertEqual(captured[0].url.params["start"], "0")
+        self.assertEqual(captured[0].url.params["start"], "40")
         self.assertEqual(captured[0].url.params["source_type"], "include")
         self.assertEqual(result["status"], "observed")
+        self.assertEqual(result["page"], 3)
+        self.assertTrue(result["has_previous"])
+        self.assertFalse(result["has_next"])
         self.assertEqual(len(result["observations"]), 1)
         self.assertNotIn("private-banner", str(result))
         self.assertNotIn("netlas-token-value", str(result))
@@ -102,6 +228,9 @@ class PassiveLookupTests(unittest.TestCase):
             check_owned("8.8.8.0/29")
         with self.assertRaisesRegex(ValueError, "specific Netlas query"):
             search_world("*", netlas_key="netlas-token-value")
+        for start in (-20, 1, 10_000, True):
+            with self.subTest(start=start), self.assertRaisesRegex(ValueError, "page offset"):
+                search_world("prot7:modbus", start=start)
 
         def respond(request):
             self.assertIn(request.url.host, {"app.netlas.io", "internetdb.shodan.io"})
@@ -132,6 +261,12 @@ class PassiveLookupTests(unittest.TestCase):
         self.assertEqual(client.post("/api/exposure/world/search", json={
             "query": "prot7:modbus", "netlas_key": "netlas-token-value",
         }).status_code, 401)
+        with patch("main.search_world", return_value={"mode": "world", "observations": []}) as lookup:
+            response = client.post("/api/exposure/world/search", json={
+                "query": "prot7:modbus", "netlas_key": "netlas-token-value", "start": 60,
+            }, headers={"Authorization": f"Bearer {AUTH_TOKEN}"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(lookup.call_args.kwargs["start"], 60)
 
 
 if __name__ == "__main__":

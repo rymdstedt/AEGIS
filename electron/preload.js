@@ -13,6 +13,19 @@ function applicationChatRequestId() {
 }
 
 contextBridge.exposeInMainWorld('aegisDesktop', Object.freeze({
+  loadExposureCredentials() {
+    return ipcRenderer.invoke('aegis:provider-credentials:load');
+  },
+  saveExposureCredentials(credentials) {
+    const value = credentials && typeof credentials === 'object' ? credentials : {};
+    const updates = {};
+    if (value.censys !== undefined) updates.censys = String(value.censys);
+    if (value.netlas !== undefined) updates.netlas = String(value.netlas);
+    return ipcRenderer.invoke('aegis:provider-credentials:save', updates);
+  },
+  clearExposureCredentials() {
+    return ipcRenderer.invoke('aegis:provider-credentials:clear', 'all');
+  },
   selectArtifact(kind) {
     if (!allowedKinds.has(kind)) {
       return Promise.reject(new Error('Unsupported artifact selection type'));

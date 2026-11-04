@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import ExposureLive from "./ExposureLive";
 
 const MAX_FILE_BYTES = 2_000_000;
 const GROUPS = ["All", "OT / control", "Management candidate", "Other service"];
@@ -13,6 +14,7 @@ function Stat({ label, value, theme }) {
 }
 
 export default function ExposureInventory({ apiFetch, theme, onBack }) {
+  const [mode, setMode] = useState("owned");
   const [file, setFile] = useState(null);
   const [scope, setScope] = useState("");
   const [result, setResult] = useState(null);
@@ -59,11 +61,14 @@ export default function ExposureInventory({ apiFetch, theme, onBack }) {
     padding: "10px 16px", fontWeight: 700, cursor: loading ? "wait" : "pointer", fontFamily: "inherit",
   };
 
+  if (mode !== "import") return <ExposureLive apiFetch={apiFetch} theme={theme} onBack={onBack} onImport={() => setMode("import")} />;
+
   return (
     <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <button type="button" onClick={onBack} style={{ ...buttonStyle, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, marginBottom: 18 }}>← Back to start</button>
         <h1 style={{ fontSize: 24, margin: "0 0 8px" }}>Exposure Inventory</h1>
+        <button type="button" onClick={() => { setMode("owned"); setResult(null); setError(""); }} style={{ ...buttonStyle, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, marginBottom: 14 }}>← Automatic checks</button>
         <p style={{ color: theme.textDim, lineHeight: 1.5, margin: "0 0 20px" }}>
           Review internet-facing services from a Censys export for IP addresses you own. AEGIS reads the file locally and does not contact the listed devices or Censys.
         </p>

@@ -239,10 +239,10 @@ def _record_observations(record: dict[str, Any]) -> list[dict[str, Any]]:
     return observations
 
 
-def _present_observation(ip: str, item: dict[str, Any]) -> dict[str, Any]:
+def _present_observation(ip: str, item: dict[str, Any], source: str = "Censys export") -> dict[str, Any]:
     evidence_text = " ".join((item["title"], item["reported_vendor"], item["reported_product"],
                               item["reported_version"]))
-    identities = identify_product_fingerprints(evidence_text, source="Censys export")
+    identities = identify_product_fingerprints(evidence_text, source=source)
     identity = identities[0] if identities else None
     vendor = identity["vendor"] if identity else (item["reported_vendor"] or identify_vendor(evidence_text))
     product = identity["product"] if identity else item["reported_product"]
@@ -266,7 +266,7 @@ def _present_observation(ip: str, item: dict[str, Any]) -> dict[str, Any]:
         "version": version, "category": category, "review_group": group,
         "review_basis": review_basis,
         "identity_source": "AEGIS signature" if identity else (
-            "Censys software field" if item["reported_product"] else "unclassified"
+            f"{source} software field" if item["reported_product"] else "unclassified"
         ),
         "scan_time": item["scan_time"], "patch_status": "unknown",
     }

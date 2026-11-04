@@ -27,6 +27,7 @@ from application.llm import (
     ask_application_llm,
 )
 from exposure.censys import analyze_censys_export
+from exposure.live import check_owned, search_world
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -91,6 +92,17 @@ class CensysExposureRequest(BaseModel):
     filename: str = Field(min_length=1, max_length=255)
     content: str
     scope: str = Field(min_length=1, max_length=4_000)
+
+
+class OwnedExposureRequest(BaseModel):
+    targets: str = Field(min_length=1, max_length=2_000)
+    censys_pat: SecretStr | None = None
+    netlas_key: SecretStr | None = None
+
+
+class WorldExposureRequest(BaseModel):
+    query: str = Field(min_length=1, max_length=160)
+    netlas_key: SecretStr | None = None
 
 
 def _get_application_service() -> ApplicationResearchService:
@@ -686,6 +698,29 @@ async def analyze_censys_exposure(payload: CensysExposureRequest):
     try:
         return await asyncio.to_thread(
             analyze_censys_export, payload.filename, payload.content, payload.scope,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/exposure/owned/check")
+async def check_owned_exposure(payload: OwnedExposureRequest):
+    try:
+        return await asyncio.to_thread(
+            check_owned, payload.targets,
+            censys_pat=payload.censys_pat.get_secret_value() if payload.censys_pat else "",
+            netlas_key=payload.netlas_key.get_secret_value() if payload.netlas_key else "",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/exposure/world/search")
+async def search_world_exposure(payload: WorldExposureRequest):
+    try:
+        return await asyncio.to_thread(
+            search_world, payload.query,
+            netlas_key=payload.netlas_key.get_secret_value() if payload.netlas_key else "",
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc

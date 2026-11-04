@@ -106,7 +106,11 @@ fs.rmSync(outputDirectory, {
 
 const build = spawnSync(builder, args, {
   cwd: projectRoot,
-  env: process.env,
+  // electronDownload.cache covers the Electron archive; builder tools such as
+  // icons use ELECTRON_BUILDER_CACHE and must share the isolated build root.
+  env: electronCache && !process.env.ELECTRON_BUILDER_CACHE
+    ? { ...process.env, ELECTRON_BUILDER_CACHE: electronCache }
+    : process.env,
   stdio: 'inherit',
 });
 if (build.error) throw build.error;

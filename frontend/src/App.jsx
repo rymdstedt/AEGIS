@@ -38,14 +38,14 @@ function currentScanId() {
   return created;
 }
 
-// Hybrid Solutions brand palette (ocean / electric / poppy / merlot / charcoal)
+// Shared dark ocean palette for the AEGIS workspaces.
 const theme = {
-  bg: "#161d33", surface: "#1d2542", surfaceAlt: "#232c52", border: "#333f6e",
-  text: "#eef1f8", textDim: "#9aa4c4", accent: "#0099d4",
-  accentGlow: "rgba(0,153,212,0.18)", critical: "#952f47", high: "#eb5e1d",
-  medium: "#f0b429", low: "#0099d4", info: "#6b7280", green: "#1fa97a",
-  terminal: "#10152b",
-  fontFamily: "'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  bg: "#111a2d", surface: "#1b2942", surfaceAlt: "#22334f", border: "#344a68",
+  text: "#f4f7fc", textDim: "#b1c0d6", accent: "#62cef0",
+  accentGlow: "rgba(98,206,240,0.16)", critical: "#f07896", high: "#ff9a6a",
+  medium: "#f5c66a", low: "#8adcf5", info: "#b1c0d6", green: "#77e0bc",
+  terminal: "#0d1728",
+  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 const sev_colors = { critical: theme.critical, high: theme.high, medium: theme.medium, low: theme.low, info: theme.info };
 
@@ -288,17 +288,17 @@ function Terminal({ lines }) {
   );
 }
 
-const inputStyle = { width: "100%", padding: "10px 14px", background: "#0a0e17", border: "1px solid #1e293b", borderRadius: 6, color: "#e2e8f0", fontSize: 14, outline: "none" };
+const inputStyle = { width: "100%", padding: "10px 14px", background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 9, color: theme.text, fontSize: 14, outline: "none" };
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: "block", fontSize: 12, color: "#64748b", marginBottom: 6, fontWeight: 600 }}>{label}</label>
+      <label style={{ display: "block", fontSize: 12, color: theme.textDim, marginBottom: 7, fontWeight: 700 }}>{label}</label>
       {children}
     </div>
   );
 }
 function pillBtn(color) {
-  return { padding: "4px 12px", background: `${color}22`, color, border: `1px solid ${color}44`, borderRadius: 4, fontSize: 11, fontWeight: 600, cursor: "pointer" };
+  return { padding: "7px 12px", background: `${color}22`, color, border: `1px solid ${color}55`, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" };
 }
 
 function EvidenceTrail({ snapshot, coverage, decision, onRetry, onContinue, onRefresh, onOpenReport }) {
@@ -413,6 +413,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
   const [phases, setPhases] = useState(["recon", "web", "network", "osint", "exploit"]);
   const [scope, setScope] = useState("");
   const [activeTab, setActiveTab] = useState("terminal");
+  const activeTabRef = useRef(null);
   const [chatMsg, setChatMsg] = useState("");
   const [showConfig, setShowConfig] = useState(true);
   const [envStatus, setEnvStatus] = useState(null);
@@ -425,6 +426,10 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
   const [confirmedRecoveryConfig, setConfirmedRecoveryConfig] = useState("");
   const recoveryConfig = JSON.stringify({ target, scope, mode, phases, useAi, model: useAi ? model : "" });
   const recoveryAuthorized = !recoveryPrepared || confirmedRecoveryConfig === recoveryConfig;
+
+  useEffect(() => {
+    if (!showConfig) activeTabRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [activeTab, showConfig]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -625,7 +630,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
   const latestStartError = [...agent.logs].reverse().find(item => item.type === "error")?.message;
 
   return (
-    <div style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
+    <div className="aegis-app" style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 6px; }
@@ -640,16 +645,16 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: `1px solid ${theme.border}`, background: `linear-gradient(180deg, ${theme.surface} 0%, ${theme.bg} 100%)`, flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <div className="aegis-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: `1px solid ${theme.border}`, background: theme.surface, flexShrink: 0 }}>
+        <div className="aegis-topbar-brand" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" />
             <path d="M9 12l2 2 4-4" />
           </svg>
           <div style={{ fontSize: 22, fontWeight: 700 }}>AEGIS<span style={{ color: theme.high }}>.</span></div>
-          <span style={{ color: theme.textDim, fontSize: 12 }}>AI Pentest Agent</span>
+          <span style={{ color: theme.textDim, fontSize: 12 }}>Security workspace</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12 }}>
+        <div className="aegis-topbar-status" style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12 }}>
           <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <StatusDot color={agent.connected ? theme.green : theme.critical} pulse={agent.connected} />
             {agent.connected ? "Connected" : "Disconnected"}
@@ -665,9 +670,9 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
 
       {/* Config */}
       {showConfig && (
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px 0" }}>
-          <div style={{ width: 560, padding: 32, background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 12, animation: "slideIn 0.3s ease" }}>
-            <div role="tablist" aria-label="Start menu" style={{ display: "flex", flexWrap: "wrap", gap: 4, margin: "-16px -16px 22px", padding: 4, background: theme.bg, borderRadius: 8 }}>
+        <div className="aegis-home-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px 0" }}>
+          <div className="aegis-home-card" style={{ width: 560, padding: 32, background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 12, animation: "slideIn 0.3s ease" }}>
+            <div role="tablist" className="aegis-home-nav" aria-label="Start menu" style={{ display: "flex", flexWrap: "wrap", gap: 4, margin: "-16px -16px 22px", padding: 4, background: theme.bg, borderRadius: 8 }}>
               <button
                 role="tab"
                 aria-selected="true"
@@ -704,7 +709,8 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 ◉ Exposure Inventory
               </button>
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}><span style={{ color: theme.accent }}>⚡</span> New Engagement</h2>
+            <h2 className="aegis-home-title" style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>New engagement</h2>
+            <p className="aegis-home-note">Define the target and scope, then choose how AEGIS should investigate. Every scan starts from the permissions you set here.</p>
 
             {recoveryPlan && <div role="status" style={{ padding: 12, marginBottom: 16, border: `1px solid ${theme.high}`, borderRadius: 6, background: `${theme.high}12`, fontSize: 12, lineHeight: 1.5 }}>
               <b>Previous scan was interrupted</b>
@@ -811,11 +817,11 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
             </Field>
 
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: "#64748b", marginBottom: 4 }}>QUICK PRESETS (faster scans)</div>
+              <div style={{ fontSize: 12, color: theme.textDim, marginBottom: 8, fontWeight: 700 }}>QUICK PRESETS</div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                <button onClick={() => { setScope("light quick scan internal device"); setPhases(["recon", "network"]); setUseAi(false); }} style={{ padding: "4px 8px", fontSize: 11, background: "#1e293b", border: "1px solid #334155", borderRadius: 4, color: "#94a3b8" }}>Internal Device (fast, no LLM)</button>
-                <button onClick={() => { setScope("only web ports 80,443"); setPhases(["recon", "web"]); setUseAi(true); }} style={{ padding: "4px 8px", fontSize: 11, background: "#1e293b", border: "1px solid #334155", borderRadius: 4, color: "#94a3b8" }}>Web App Focus</button>
-                <button onClick={() => { setPhases(["recon", "web", "network", "osint", "exploit"]); setUseAi(true); }} style={{ padding: "4px 8px", fontSize: 11, background: "#1e293b", border: "1px solid #334155", borderRadius: 4, color: "#94a3b8" }}>Full Phases</button>
+                <button onClick={() => { setScope("light quick scan internal device"); setPhases(["recon", "network"]); setUseAi(false); }} style={{ padding: "7px 11px", fontSize: 12, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, borderRadius: 8, color: theme.text }}>Internal device</button>
+                <button onClick={() => { setScope("only web ports 80,443"); setPhases(["recon", "web"]); setUseAi(true); }} style={{ padding: "7px 11px", fontSize: 12, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, borderRadius: 8, color: theme.text }}>Web app focus</button>
+                <button onClick={() => { setPhases(["recon", "web", "network", "osint", "exploit"]); setUseAi(true); }} style={{ padding: "7px 11px", fontSize: 12, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, borderRadius: 8, color: theme.text }}>Full phases</button>
               </div>
             </div>
 
@@ -844,7 +850,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               style={{
                 width: "100%", padding: "12px 24px", marginTop: 8,
                 background: target && agent.connected && phases.length > 0 && (!useAi || model) && agent.scanState !== "starting" && recoveryAuthorized ? theme.accent : theme.border,
-                color: target && agent.connected && phases.length > 0 && (!useAi || model) && agent.scanState !== "starting" && recoveryAuthorized ? "#fff" : theme.textDim,
+                color: target && agent.connected && phases.length > 0 && (!useAi || model) && agent.scanState !== "starting" && recoveryAuthorized ? theme.bg : theme.textDim,
                 border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700,
               }}
             >
@@ -856,14 +862,14 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
 
       {/* Dashboard */}
       {!showConfig && (
-        <div style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 340px", overflow: "hidden" }}>
+        <div className="aegis-dashboard" style={{ flex: 1, display: "grid", gridTemplateColumns: "1fr 340px", overflow: "hidden" }}>
           {/* Left */}
-          <div style={{ display: "flex", flexDirection: "column", borderRight: `1px solid ${theme.border}`, overflow: "hidden" }}>
-            <div style={{ display: "flex", borderBottom: `1px solid ${theme.border}`, background: theme.surfaceAlt, flexShrink: 0, alignItems: "flex-end", height: 38 }}>
+          <div className="aegis-dashboard-main" style={{ display: "flex", flexDirection: "column", borderRight: `1px solid ${theme.border}`, overflow: "hidden" }}>
+            <div className="aegis-dashboard-tabs" role="tablist" aria-label="Scan workspace" style={{ display: "flex", borderBottom: `1px solid ${theme.border}`, background: theme.surfaceAlt, flexShrink: 0, alignItems: "flex-end", height: 38 }}>
               {["terminal", "output", "evidence", "exploitation", "diagnostics", "report"].map(tab => {
                 const isActive = activeTab === tab;
                 return (
-                  <button key={tab} onClick={() => { setActiveTab(tab); if (tab === "evidence") agent.send({ action: "evidence" }); }} style={{
+                  <button key={tab} ref={isActive ? activeTabRef : null} role="tab" aria-selected={isActive} onClick={() => { setActiveTab(tab); if (tab === "evidence") agent.send({ action: "evidence" }); }} style={{
                     padding: "8px 16px",
                     paddingBottom: isActive ? 6 : 8,
                     background: "transparent",
@@ -889,7 +895,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               </div>
             </div>
 
-            <div style={{ flex: 1, overflow: "hidden" }}>
+            <div className="aegis-dashboard-content" style={{ flex: 1, overflow: "hidden" }}>
               {activeTab === "terminal" && <Terminal lines={agent.logs} />}
               {activeTab === "output" && (
                 <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -913,14 +919,15 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 />
               )}
               {activeTab === "diagnostics" && (
-                <div style={{ padding: 20, height: "100%", overflow: "auto", fontSize: 13 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div className="aegis-diagnostics" style={{ padding: 20, height: "100%", overflow: "auto", fontSize: 13 }}>
+                  <div className="aegis-dashboard-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <div className="aegis-dashboard-section-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <HomeButton onClick={() => { setActiveTab("terminal"); setShowConfig(true); }} theme={theme} compact />
-                      <b>Environment & Diagnostics</b>
+                      <div><div className="aegis-page-kicker">AEGIS <span aria-hidden="true">/</span> WORKSPACE</div><b>Environment & Diagnostics</b></div>
                     </div>
                     <button onClick={refreshEnvironment} style={{ ...pillBtn(theme.accent), fontSize: 11 }}>Refresh</button>
                   </div>
+                  <p className="aegis-diagnostics-intro">Review local services, tool availability, and setup output for this workspace.</p>
 
                   {!envStatus && <div>Loading environment status...</div>}
 
@@ -1119,12 +1126,12 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 onKeyDown={e => e.key === "Enter" && sendChat()}
                 placeholder="Send a message to the agent... (type 'stop' to halt)"
                 style={{ flex: 1, padding: "8px 12px", background: theme.bg, border: `1px solid ${theme.border}`, borderRadius: 6, color: theme.text, fontSize: 13, outline: "none" }} />
-              <button onClick={sendChat} style={{ padding: "8px 16px", background: theme.accent, color: "#fff", border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Send</button>
+              <button onClick={sendChat} style={{ padding: "8px 16px", background: theme.accent, color: theme.bg, border: "none", borderRadius: 6, fontSize: 13, fontWeight: 600 }}>Send</button>
             </div>
           </div>
 
           {/* Right Sidebar */}
-          <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div className="aegis-dashboard-sidebar" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {agent.approval && (
               <div style={{ padding: 16, background: `${theme.high}11`, borderBottom: `1px solid ${theme.high}44`, animation: "slideIn 0.3s ease", flexShrink: 0 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: theme.high, marginBottom: 8 }}>⚠️ APPROVAL REQUIRED</div>

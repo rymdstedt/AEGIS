@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import ExposureLive from "./ExposureLive";
-import HomeButton from "./HomeButton";
+import PageHeader from "./PageHeader";
 
 const MAX_FILE_BYTES = 2_000_000;
 const GROUPS = ["All", "OT / control", "Management candidate", "Other service"];
@@ -58,23 +58,23 @@ export default function ExposureInventory({ apiFetch, theme, onBack }) {
     fontFamily: "inherit",
   };
   const buttonStyle = {
-    background: theme.accent, color: "white", border: 0, borderRadius: 7,
+    background: theme.accent, color: theme.bg, border: 0, borderRadius: 7,
     padding: "10px 16px", fontWeight: 700, cursor: loading ? "wait" : "pointer", fontFamily: "inherit",
   };
 
   if (mode !== "import") return <ExposureLive apiFetch={apiFetch} theme={theme} onBack={onBack} onImport={() => setMode("import")} />;
 
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: theme.fontFamily }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <HomeButton onClick={onBack} theme={theme} style={{ marginBottom: 18 }} />
-        <h1 style={{ fontSize: 24, margin: "0 0 8px" }}>Exposure Inventory</h1>
-        <button type="button" onClick={() => { setMode("owned"); setResult(null); setError(""); }} style={{ ...buttonStyle, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, marginBottom: 14 }}>← Automatic checks</button>
-        <p style={{ color: theme.textDim, lineHeight: 1.5, margin: "0 0 20px" }}>
+    <div className="aegis-page" style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: theme.fontFamily }}>
+      <PageHeader title="Exposure Inventory" subtitle="Censys export review" onBack={onBack} theme={theme} badge="Local file analysis" />
+      <div className="aegis-page-content">
+        <div className="aegis-page-intro"><h1>Review a Censys export</h1>
+        <p>
           Review internet-facing services from a Censys export for IP addresses you own. AEGIS reads the file locally and does not contact the listed devices or Censys.
-        </p>
+        </p></div>
+        <div className="aegis-page-tabs"><button type="button" onClick={() => { setMode("owned"); setResult(null); setError(""); }} style={{ ...buttonStyle, background: theme.surfaceAlt, color: theme.text, border: `1px solid ${theme.border}` }}>← Automatic checks</button></div>
 
-        <div style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 10, padding: 20, display: "grid", gap: 16 }}>
+        <div className="aegis-page-card" style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 10, padding: 20, display: "grid", gap: 16 }}>
           <label style={{ display: "grid", gap: 7, fontSize: 13, fontWeight: 700 }}>
             Censys host export
             <input type="file" accept=".csv,.json,.jsonl,text/csv,application/json" aria-label="Censys host export" disabled={loading} onChange={event => { setFile(event.target.files?.[0] || null); setResult(null); setError(""); }} style={inputStyle} />

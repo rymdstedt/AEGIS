@@ -1,0 +1,153 @@
+:root {
+  color-scheme: dark;
+  font-synthesis: none;
+  --aegis-bg: #111a2d;
+  --aegis-surface: #1b2942;
+  --aegis-raised: #22334f;
+  --aegis-border: #344a68;
+  --aegis-text: #f4f7fc;
+  --aegis-muted: #b1c0d6;
+  --aegis-accent: #62cef0;
+  --aegis-focus: #8adcf5;
+  --aegis-radius: 14px;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+body { margin: 0; color: var(--aegis-text); background: var(--aegis-bg); }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--aegis-focus);
+  outline-offset: 2px;
+}
+::selection { background: #246f9b; color: white; }
+
+.aegis-app, .aegis-page, .aegis-research {
+  color: var(--aegis-text);
+  background: radial-gradient(circle at 20% -18%, #1c3a56 0, transparent 40%), var(--aegis-bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.aegis-app :is(p, li), .aegis-page :is(p, li), .aegis-research :is(p, li) { line-height: 1.55; }
+.aegis-app :is(input, textarea, select), .aegis-page :is(input, textarea, select), .aegis-research :is(input, textarea, select) {
+  min-height: 40px;
+  background: #142038;
+  color: var(--aegis-text);
+  border: 1px solid var(--aegis-border);
+  border-radius: 9px;
+}
+.aegis-app ::placeholder, .aegis-page ::placeholder, .aegis-research ::placeholder { color: #92a6c2; opacity: 1; }
+.aegis-app :is(button, input, textarea, select), .aegis-page :is(button, input, textarea, select), .aegis-research :is(button, input, textarea, select) { transition: border-color .16s ease, background-color .16s ease, box-shadow .16s ease; }
+.aegis-app button:hover:not(:disabled), .aegis-page button:hover:not(:disabled), .aegis-research button:hover:not(:disabled) { border-color: var(--aegis-accent) !important; }
+.aegis-app button:disabled, .aegis-page button:disabled, .aegis-research button:disabled { opacity: .55; }
+.aegis-app :is(input, textarea, select):focus, .aegis-page :is(input, textarea, select):focus, .aegis-research :is(input, textarea, select):focus { border-color: var(--aegis-accent) !important; box-shadow: 0 0 0 3px #62cef022; }
+
+.aegis-topbar, .aegis-page-header {
+  min-height: 76px;
+  padding: 12px clamp(18px, 3vw, 36px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  background: #17243a !important;
+  border-bottom: 1px solid var(--aegis-border);
+}
+.aegis-topbar-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.aegis-topbar-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 18px; }
+.aegis-page-header-main, .aegis-page-header-actions { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.aegis-page-header-divider { width: 1px; align-self: stretch; min-height: 32px; background: var(--aegis-border); }
+.aegis-page-identity { min-width: 0; }
+.aegis-page-kicker { color: var(--aegis-accent); font-size: 10px; font-weight: 800; letter-spacing: .15em; }
+.aegis-page-kicker span { color: var(--aegis-muted); padding: 0 3px; }
+.aegis-page-title { font-size: clamp(18px, 2vw, 23px); line-height: 1.2; font-weight: 750; letter-spacing: -.02em; }
+.aegis-page-subtitle { color: var(--aegis-muted); font-size: 12px; line-height: 1.4; }
+.aegis-page-badge { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 4px 11px; border-radius: 99px; border: 1px solid #2e6b63; background: #173d3b; color: #90ecd2; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.aegis-page-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #61dfb8; }
+.aegis-home-button { min-height: 38px !important; border-radius: 9px !important; white-space: nowrap; }
+
+.aegis-home-scroll { width: 100%; padding: 28px clamp(16px, 3vw, 40px) 64px !important; }
+.aegis-home-card { width: min(100%, 920px) !important; margin: 0 auto; padding: clamp(20px, 3vw, 34px) !important; border-radius: 18px !important; box-shadow: 0 22px 70px #07111f55; }
+.aegis-home-nav { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px !important; margin: 0 0 28px !important; padding: 0 !important; background: transparent !important; }
+.aegis-home-nav button { min-height: 66px; padding: 12px !important; border-radius: 11px !important; font-size: 13px !important; text-align: left; line-height: 1.3; }
+.aegis-home-title { margin-bottom: 20px !important; font-size: 26px !important; letter-spacing: -.025em; }
+.aegis-home-note { max-width: 68ch; color: var(--aegis-muted); font-size: 13px; margin: -12px 0 28px; }
+.aegis-home-card label { color: var(--aegis-muted) !important; font-size: 12px !important; letter-spacing: .05em; }
+.aegis-home-card :is(input, textarea, select) { font-size: 14px; }
+.aegis-home-card button { border-radius: 9px !important; }
+.aegis-home-card button[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--aegis-accent); }
+
+.aegis-dashboard { min-height: 0; grid-template-columns: minmax(0, 1fr) minmax(290px, 330px) !important; }
+.aegis-dashboard-main, .aegis-dashboard-sidebar { min-width: 0; }
+.aegis-dashboard-tabs { height: auto !important; min-height: 48px; overflow-x: auto; align-items: stretch !important; }
+.aegis-dashboard-tabs > button { height: auto !important; min-height: 45px; flex: 0 0 auto; white-space: nowrap; }
+.aegis-dashboard-tabs > div { flex: 0 0 auto; }
+.aegis-dashboard-content { min-height: 0; }
+.aegis-dashboard-sidebar { border-left: 1px solid var(--aegis-border); }
+.aegis-dashboard-section-header { gap: 12px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--aegis-border); }
+.aegis-dashboard-section-title b { display: block; font-size: 18px; letter-spacing: -.02em; }
+.aegis-diagnostics-intro { margin: 16px 0 22px; color: var(--aegis-muted); }
+
+.aegis-page { min-height: 100vh; padding: 0 !important; }
+.aegis-page-content { width: min(100%, 1200px); margin: 0 auto; padding: clamp(20px, 3vw, 36px) clamp(16px, 3vw, 36px) 64px; }
+.aegis-page-intro { max-width: 78ch; margin-bottom: 22px; }
+.aegis-page-intro h1 { font-size: clamp(25px, 3vw, 34px) !important; margin: 0 0 8px !important; letter-spacing: -.035em; }
+.aegis-page-intro p { color: var(--aegis-muted); font-size: 14px; }
+.aegis-page-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 22px; }
+.aegis-page-tabs button { min-height: 42px; padding: 9px 15px !important; border-radius: 10px !important; }
+.aegis-page-card { border-radius: var(--aegis-radius) !important; box-shadow: 0 14px 40px #07111f35; }
+.aegis-page-card label { font-size: 13px !important; }
+.aegis-page-card input, .aegis-page-card textarea { font-size: 14px !important; }
+.aegis-page-card [role="alert"] { padding: 11px 13px; border-radius: 9px; background: #5a2b3b; color: #ffe4eb !important; }
+.aegis-page table { font-size: 12px; }
+.aegis-page table th { background: var(--aegis-raised); color: var(--aegis-text); font-weight: 700; }
+.aegis-page table td, .aegis-page table th { vertical-align: top; line-height: 1.45; }
+.aegis-page article { border-radius: var(--aegis-radius) !important; }
+
+.aegis-research-main { min-height: 0; grid-template-columns: 250px minmax(0, 1fr) !important; }
+.aegis-research-toolbar { flex-wrap: wrap; padding: 16px clamp(18px, 3vw, 32px) !important; gap: 12px 22px !important; }
+.aegis-research-toolbar > div:first-child { flex: 1 1 420px; }
+.aegis-research-toolbar > div:last-child { flex-wrap: wrap; }
+.aegis-research-projects { min-width: 0; }
+.aegis-research-detail { padding: clamp(18px, 2.6vw, 32px) !important; }
+.aegis-research-stats { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+.aegis-research-columns { grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr) !important; }
+.aegis-research [style*="font-size: 8px"], .aegis-research [style*="font-size: 9px"] { font-size: 11px !important; line-height: 1.45; }
+.aegis-research [style*="font-size: 10px"] { font-size: 12px !important; line-height: 1.45; }
+.aegis-research [style*="font-size: 11px"] { font-size: 12px !important; line-height: 1.45; }
+.aegis-research :is(button, input, select, textarea) { min-height: 34px; }
+.aegis-research h2 { font-size: 16px !important; line-height: 1.3; }
+
+@media (max-width: 980px) {
+  .aegis-dashboard { display: flex !important; flex-direction: column; overflow-y: auto !important; }
+  .aegis-dashboard-main { min-height: 430px; flex: 1 0 60vh; border-right: 0 !important; }
+  .aegis-dashboard-sidebar { flex: 0 0 auto; min-height: 270px; max-height: 40vh; border-top: 1px solid var(--aegis-border); border-left: 0; }
+  .aegis-research-columns { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 760px) {
+  .aegis-topbar, .aegis-page-header { min-height: 66px; padding: 11px 16px !important; }
+  .aegis-home-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aegis-home-nav button { min-height: 58px; }
+  .aegis-research { min-height: 100vh; height: auto !important; }
+  .aegis-research-main { display: flex !important; flex-direction: column; }
+  .aegis-research-projects { min-height: 0; max-height: 160px; overflow-y: auto; border-right: 0 !important; border-bottom: 1px solid var(--aegis-border); }
+  .aegis-research-detail { min-height: 48vh; overflow: visible !important; }
+  .aegis-research-toolbar > div:last-child { width: 100%; }
+  .aegis-research-toolbar button { flex: 1 1 145px; }
+}
+@media (max-width: 520px) {
+  .aegis-page-header-divider, .aegis-page-subtitle { display: none; }
+  .aegis-page-header-actions { width: 100%; }
+  .aegis-topbar-brand > span { display: none; }
+  .aegis-home-card { padding: 17px !important; }
+  .aegis-home-nav { gap: 6px !important; }
+  .aegis-home-nav button { font-size: 12px !important; }
+  .aegis-home-card [style*="display: flex"][style*="gap: 8px"] { flex-wrap: wrap; }
+  .aegis-home-card [style*="display: flex"][style*="gap: 8px"] > button { flex: 1 1 130px; }
+  .aegis-page-tabs button { flex: 1 1 145px; }
+  .aegis-page-card { padding: 16px !important; }
+  .aegis-research-stats { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}

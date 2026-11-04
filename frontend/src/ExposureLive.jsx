@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import HomeButton from "./HomeButton";
+import PageHeader from "./PageHeader";
 
 function ObservationList({ items, theme }) {
   if (!items.length) return <p style={{ color: theme.textDim, fontSize: 12 }}>No service observations returned.</p>;
@@ -69,9 +69,9 @@ export default function ExposureLive({ apiFetch, theme, onBack, onImport }) {
   const [rememberCredentials, setRememberCredentials] = useState(true);
   const [credentialMessage, setCredentialMessage] = useState("");
   const field = { width: "100%", boxSizing: "border-box", background: theme.bg, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: 7, padding: "10px 12px", fontSize: 13, fontFamily: "inherit" };
-  const button = { background: theme.accent, color: "white", border: 0, borderRadius: 7, padding: "10px 16px", fontWeight: 700, fontFamily: "inherit", cursor: loading ? "wait" : "pointer" };
+  const button = { background: theme.accent, color: theme.bg, border: 0, borderRadius: 7, padding: "10px 16px", fontWeight: 700, fontFamily: "inherit", cursor: loading ? "wait" : "pointer" };
   const label = { display: "grid", gap: 7, fontSize: 13, fontWeight: 700 };
-  const hint = { color: theme.textDim, fontSize: 11, fontWeight: 400, lineHeight: 1.5 };
+  const hint = { color: theme.textDim, fontSize: 12, fontWeight: 400, lineHeight: 1.5 };
 
   useEffect(() => {
     let active = true;
@@ -157,16 +157,16 @@ export default function ExposureLive({ apiFetch, theme, onBack, onImport }) {
 
   const selected = mode === "owned" ? targets.trim() : query.trim();
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: theme.fontFamily }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-        <HomeButton onClick={onBack} theme={theme} style={{ marginBottom: 18 }} />
-        <h1 style={{ fontSize: 24, margin: "0 0 8px" }}>Exposure Inventory</h1>
-        <p style={{ color: theme.textDim, lineHeight: 1.5 }}>Check published observations from credible indexes. AEGIS never connects to devices found in these views. An exposure, a reported CVE, a CVE exploited somewhere, and a compromised device are different findings.</p>
-        <div role="tablist" aria-label="Exposure source" style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "18px 0" }}>
-          {["owned", "world"].map(value => <button key={value} type="button" role="tab" aria-selected={mode === value} onClick={() => { setMode(value); setResult(null); setError(""); }} style={{ ...button, background: mode === value ? theme.accent : theme.surfaceAlt, border: `1px solid ${theme.border}` }}>{value === "owned" ? "My assets" : "Worldwide index"}</button>)}
-          <button type="button" onClick={onImport} style={{ ...button, background: theme.surfaceAlt, border: `1px solid ${theme.border}` }}>Import Censys file</button>
+    <div className="aegis-page" style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: theme.fontFamily }}>
+      <PageHeader title="Exposure Inventory" subtitle="Passive exposure intelligence" onBack={onBack} theme={theme} badge="Provider-only checks" />
+      <div className="aegis-page-content">
+        <div className="aegis-page-intro"><h1>Understand what is visible</h1>
+        <p>Review observations from public indexes. AEGIS does not contact devices found here. Exposure, a CVE association, and evidence of compromise remain separate findings.</p></div>
+        <div role="tablist" className="aegis-page-tabs" aria-label="Exposure source" style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "18px 0" }}>
+          {["owned", "world"].map(value => <button key={value} type="button" role="tab" aria-selected={mode === value} onClick={() => { setMode(value); setResult(null); setError(""); }} style={{ ...button, color: mode === value ? theme.bg : theme.text, background: mode === value ? theme.accent : theme.surfaceAlt, border: `1px solid ${theme.border}` }}>{value === "owned" ? "My assets" : "Worldwide index"}</button>)}
+          <button type="button" onClick={onImport} style={{ ...button, color: theme.text, background: theme.surfaceAlt, border: `1px solid ${theme.border}` }}>Import Censys file</button>
         </div>
-        <div style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 10, padding: 20, display: "grid", gap: 16 }}>
+        <div className="aegis-page-card" style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 10, padding: 20, display: "grid", gap: 16 }}>
           {mode === "owned" ? <>
             <label style={label}>Public IPs, small CIDRs, or domains you control
               <textarea value={targets} onChange={event => { setTargets(event.target.value); setResult(null); }} disabled={loading} aria-label="Owned public assets" placeholder="Enter your public IPs or domains, one per line" rows={3} style={{ ...field, resize: "vertical" }} />
@@ -199,7 +199,7 @@ export default function ExposureLive({ apiFetch, theme, onBack, onImport }) {
                   ? `Keys are encrypted through ${credentialStorage.protection} and are never stored by the Python API.`
                   : "Protected saving is available in the packaged AEGIS desktop app, not the browser preview."}
             </div>
-            {credentialStorage.available && <div><button type="button" onClick={forgetCredentials} disabled={loading} style={{ ...button, padding: "6px 10px", fontSize: 11, background: theme.surfaceAlt, border: `1px solid ${theme.border}` }}>Forget saved keys</button></div>}
+            {credentialStorage.available && <div><button type="button" onClick={forgetCredentials} disabled={loading} style={{ ...button, padding: "6px 10px", fontSize: 11, color: theme.text, background: theme.surfaceAlt, border: `1px solid ${theme.border}` }}>Forget saved keys</button></div>}
             {credentialMessage && <div role="status" style={{ ...hint, color: credentialMessage.includes("could not") ? theme.high : theme.textDim }}>{credentialMessage}</div>}
           </div>
 
@@ -225,9 +225,9 @@ export default function ExposureLive({ apiFetch, theme, onBack, onImport }) {
           <p style={{ color: result.status === "unavailable" ? theme.critical : theme.textDim, fontSize: 12 }}>{result.source}: {result.status.replaceAll("_", " ")}. {result.note}</p>
           <div style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 8, padding: 10 }}><ObservationList items={result.observations} theme={theme} /></div>
           <div aria-label="Worldwide search pagination" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 12 }}>
-            <button type="button" onClick={() => submit(result.start - result.page_size)} disabled={!result.has_previous || loading} style={{ ...button, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, opacity: !result.has_previous || loading ? 0.45 : 1 }}>← Previous</button>
+            <button type="button" onClick={() => submit(result.start - result.page_size)} disabled={!result.has_previous || loading} style={{ ...button, color: theme.text, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, opacity: !result.has_previous || loading ? 0.45 : 1 }}>← Previous</button>
             <span style={{ color: theme.textDim, fontSize: 12 }}>Page {result.page}</span>
-            <button type="button" onClick={() => submit(result.start + result.page_size)} disabled={!result.has_next || loading} style={{ ...button, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, opacity: !result.has_next || loading ? 0.45 : 1 }}>Next →</button>
+            <button type="button" onClick={() => submit(result.start + result.page_size)} disabled={!result.has_next || loading} style={{ ...button, color: theme.text, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, opacity: !result.has_next || loading ? 0.45 : 1 }}>Next →</button>
           </div>
           <p style={{ color: theme.textDim, fontSize: 12, lineHeight: 1.5 }}>Netlas pages are passive search leads. Product identity, support status, patch state, vulnerability, and compromise require separate evidence.</p>
         </section>}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import HomeButton from "./HomeButton";
+import PageHeader from "./PageHeader";
 
 function formatBytes(value) {
   const bytes = Number(value || 0);
@@ -649,7 +649,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
   const busy = importing || analyzing || deletingProject || advisoryLoading;
 
   return (
-    <div style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
+    <div className="aegis-research" style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 7px; height: 7px; }
@@ -659,23 +659,9 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
         @keyframes aegis-spin { to { transform: rotate(360deg); } }
       `}</style>
 
-      <header style={{ height: 58, padding: "0 22px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${theme.border}`, background: `linear-gradient(180deg, ${theme.surface} 0%, ${theme.bg} 100%)` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <HomeButton onClick={onBack} theme={theme} compact />
-          <div style={{ fontSize: 21, fontWeight: 800 }}>AEGIS<span style={{ color: theme.high }}>.</span></div>
-          <div style={{ width: 1, height: 22, background: theme.border }} />
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700 }}>Application Research</div>
-            <div style={{ fontSize: 10, color: theme.textDim }}>Local artifact analysis</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, color: theme.green, fontSize: 12 }}>
-          <span style={{ width: 8, height: 8, background: theme.green, borderRadius: "50%", boxShadow: `0 0 8px ${theme.green}` }} />
-          Read-only analysis
-        </div>
-      </header>
+      <PageHeader title="Application Research" subtitle="Local artifact analysis" onBack={onBack} theme={theme} badge="Read-only analysis" />
 
-      <div style={{ padding: "12px 18px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: theme.surface, borderBottom: `1px solid ${theme.border}` }}>
+      <div className="aegis-research-toolbar" style={{ padding: "12px 18px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, background: theme.surface, borderBottom: `1px solid ${theme.border}` }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: 14 }}>Inspect source, packages, firmware, archives, and native binaries</div>
           <div style={{ color: theme.textDim, fontSize: 11, marginTop: 3 }}>AEGIS copies the selection into private storage. It does not launch, boot, mount, or run code from the artifact.</div>
@@ -684,7 +670,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
           <button disabled={!desktopPickerAvailable || busy} onClick={() => selectArtifact("file")} style={{ padding: "9px 14px", border: `1px solid ${theme.accent}`, borderRadius: 6, background: theme.accentGlow, color: theme.accent, fontWeight: 700, opacity: !desktopPickerAvailable || busy ? 0.5 : 1 }}>
             {importing ? "Importing…" : "+ Import file"}
           </button>
-          <button disabled={!desktopPickerAvailable || busy} onClick={() => selectArtifact("directory")} style={{ padding: "9px 14px", border: `1px solid ${theme.accent}`, borderRadius: 6, background: theme.accent, color: "white", fontWeight: 700, opacity: !desktopPickerAvailable || busy ? 0.5 : 1 }}>
+          <button disabled={!desktopPickerAvailable || busy} onClick={() => selectArtifact("directory")} style={{ padding: "9px 14px", border: `1px solid ${theme.accent}`, borderRadius: 6, background: theme.accent, color: theme.bg, fontWeight: 700, opacity: !desktopPickerAvailable || busy ? 0.5 : 1 }}>
             + Import source folder
           </button>
         </div>
@@ -702,8 +688,8 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
         <div role="status" style={{ padding: "9px 18px", background: `${theme.green}18`, color: theme.green, fontSize: 12, borderBottom: `1px solid ${theme.green}55` }}>{notice}</div>
       )}
 
-      <main style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "280px minmax(0, 1fr)" }}>
-        <aside style={{ minHeight: 0, overflowY: "auto", borderRight: `1px solid ${theme.border}`, background: theme.surface }}>
+      <main className="aegis-research-main" style={{ flex: 1, minHeight: 0, display: "grid", gridTemplateColumns: "280px minmax(0, 1fr)" }}>
+        <aside className="aegis-research-projects" style={{ minHeight: 0, overflowY: "auto", borderRight: `1px solid ${theme.border}`, background: theme.surface }}>
           <div style={{ padding: "12px 14px", position: "sticky", top: 0, zIndex: 1, background: theme.surfaceAlt, borderBottom: `1px solid ${theme.border}`, color: theme.textDim, fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>
             Projects ({projects.length})
           </div>
@@ -724,7 +710,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
           })}
         </aside>
 
-        <section style={{ minWidth: 0, minHeight: 0, overflowY: "auto", padding: 20 }}>
+        <section className="aegis-research-detail" style={{ minWidth: 0, minHeight: 0, overflowY: "auto", padding: 20 }}>
           {loading && !project && <div style={{ color: theme.textDim }}>Loading projects…</div>}
           {!project && !loading && (
             <div style={{ height: "100%", display: "grid", placeItems: "center" }}>
@@ -795,7 +781,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
                 </div>
               )}
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 8, marginBottom: 16 }}>
+              <div className="aegis-research-stats" style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 8, marginBottom: 16 }}>
                 <SmallStat label="Files" value={inventory.files ?? "—"} theme={theme} />
                 <SmallStat label="Analyzed text" value={inventory.analyzed_text_files ?? "—"} theme={theme} />
                 <SmallStat label="Critical" value={counts.critical ?? 0} color={theme.critical} theme={theme} />
@@ -823,7 +809,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
                 </div>
               )}
 
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(250px, 1fr)", gap: 14, alignItems: "start" }}>
+              <div className="aegis-research-columns" style={{ display: "grid", gridTemplateColumns: "minmax(0, 2fr) minmax(250px, 1fr)", gap: 14, alignItems: "start" }}>
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                     <h2 style={{ fontSize: 15 }}>Application findings</h2>

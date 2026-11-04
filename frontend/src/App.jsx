@@ -316,10 +316,10 @@ function EvidenceTrail({ snapshot, coverage, decision, onRetry, onContinue, onRe
   const limited = currentCoverage?.status === "partial" || currentCoverage?.status === "pending";
 
   return (
-    <div style={{ height: "100%", overflowY: "auto", padding: 18, background: theme.surface, fontSize: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14 }}>
+    <div className="aegis-dashboard-pane aegis-evidence" style={{ height: "100%", overflowY: "auto", padding: 18, background: theme.surface, fontSize: 12 }}>
+      <div className="aegis-panel-heading" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginBottom: 14 }}>
         <div>
-          <div style={{ fontSize: 16, fontWeight: 700 }}>Evidence trail</div>
+          <div className="aegis-panel-title" style={{ fontSize: 16, fontWeight: 700 }}>Evidence trail</div>
           <div style={{ color: theme.textDim, marginTop: 3 }}>Scanner coverage → TCP observation → protocol verification → finding or active confirmation. Raw response bodies and exact secrets are not included here.</div>
         </div>
         <button onClick={onRefresh} style={pillBtn(theme.accent)}>Refresh</button>
@@ -826,17 +826,17 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
             </div>
 
             {envStatus && !envStatus.lm_studio?.reachable && (
-              <div style={{ background: "#3b1f1f", color: "#fca5a5", padding: "8px 12px", borderRadius: 6, fontSize: 12, marginBottom: 12 }}>
+              <div style={{ background: `${theme.critical}18`, color: theme.critical, padding: "8px 12px", borderRadius: 8, fontSize: 12, marginBottom: 12, border: `1px solid ${theme.critical}55` }}>
                 ⚠️ Local LLM provider not reachable at {lmUrl}. Start the provider and make the selected model available first.
               </div>
             )}
             {envStatus && envStatus.missing_tools?.length > 5 && (
-              <div style={{ background: "#3b2f1f", color: "#fcd34d", padding: "8px 12px", borderRadius: 6, fontSize: 12, marginBottom: 12 }}>
+              <div style={{ background: `${theme.medium}18`, color: theme.medium, padding: "8px 12px", borderRadius: 8, fontSize: 12, marginBottom: 12, border: `1px solid ${theme.medium}55` }}>
                 Many tools missing ({envStatus.missing_tools.length}). Most scans will be limited. Open Diagnostics and click "Install / setup all missing tools".
               </div>
             )}
             {agent.scanState === "error" && latestStartError && (
-              <div style={{ background: "#3b1f1f", color: "#fca5a5", padding: "8px 12px", borderRadius: 6, fontSize: 12, marginBottom: 12 }}>
+              <div style={{ background: `${theme.critical}18`, color: theme.critical, padding: "8px 12px", borderRadius: 8, fontSize: 12, marginBottom: 12, border: `1px solid ${theme.critical}55` }}>
                 Could not start scan: {latestStartError}
               </div>
             )}
@@ -1024,9 +1024,9 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 </div>
               )}
               {activeTab === "exploitation" && (
-                <div style={{ padding: 16, height: "100%", minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", boxSizing: "border-box", background: theme.surface, border: `1px solid ${theme.critical}`, borderRadius: 6, fontSize: 13 }}>
-                  <div style={{ marginBottom: 8, fontWeight: 700, color: theme.critical, fontSize: 15 }}>💥 EXPLOITATION CONSOLE — NOTHING RUNS WITHOUT YOUR EXPLICIT ACCEPTANCE</div>
-                  <div style={{ marginBottom: 12, padding: 8, background: "#2a1a1a", borderRadius: 4, fontSize: 12 }}>
+                <div className="aegis-dashboard-pane aegis-exploitation" style={{ padding: 16, height: "100%", minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", boxSizing: "border-box", background: theme.surface, border: `1px solid ${theme.critical}`, borderRadius: 6, fontSize: 13 }}>
+                  <div className="aegis-panel-heading"><div className="aegis-panel-title">Exploitation console</div><div style={{ color: theme.textDim, fontSize: 12 }}>Actions follow the selected scan mode and scope limits.</div></div>
+                  <div style={{ marginBottom: 12, padding: 12, background: `${theme.critical}14`, border: `1px solid ${theme.critical}44`, borderRadius: 10, fontSize: 12 }}>
                     {mode === "autonomous" ? (
                       <><b>Autonomous execution:</b> Investigation happens first. AEGIS then automatically runs every available action mapped to a real finding, without approval dialogs. Scope and tool safety limits still apply.</>
                     ) : (
@@ -1054,14 +1054,14 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                     {actionableFindings.length === 0 ? (
                       <span style={{ color: theme.textDim }}>No evidence-backed exploit or confirmation action is currently available.</span>
                     ) : actionableFindings.map(finding => (
-                      <div key={finding.id} style={{ padding: 8, background: "#2a1a1a", border: `1px solid ${theme.critical}55`, borderRadius: 4, marginBottom: 6 }}>
+                      <div key={finding.id} style={{ padding: 12, background: `${theme.critical}14`, border: `1px solid ${theme.critical}55`, borderRadius: 10, marginBottom: 8 }}>
                         <div style={{ fontWeight: 600 }}>{finding.title}</div>
                         <div style={{ fontSize: 11, color: theme.textDim, margin: "3px 0 6px" }}>
                           Tools: {(finding.permitted_tools || []).join(", ")}
                         </div>
                         <button
                           onClick={() => approveFindingForExploitation(finding)}
-                          style={{ ...pillBtn(theme.critical), color: "white" }}
+                          style={pillBtn(theme.critical)}
                         >
                           ⚠️ APPROVE MAPPED ACTIONS
                         </button>
@@ -1073,7 +1073,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                     <div style={{ fontWeight: 600, marginBottom: 4 }}>Approved for Exploitation ({exploitationApproved.length}):</div>
                     {exploitationApproved.length === 0 ? <span style={{ color: theme.textDim }}>None yet — approve from the Findings list in Investigation view.</span> :
                       exploitationApproved.map(item => (
-                        <div key={item.id} style={{ fontSize: 12, background: "#1f2a1f", padding: "4px 6px", borderRadius: 3, marginBottom: 3 }}>
+                        <div key={item.id} style={{ fontSize: 12, background: `${theme.green}14`, border: `1px solid ${theme.green}44`, padding: "8px 10px", borderRadius: 8, marginBottom: 6 }}>
                           ✓ {item.title}
                           {item.tools.length > 0 && <span style={{ color: theme.textDim }}> — {item.tools.join(", ")}</span>}
                         </div>
@@ -1085,7 +1085,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                     {exploitConfirmations.length === 0 ? (
                       <span style={{ color: theme.textDim }}>No exploit-phase tool has confirmed a vulnerability yet.</span>
                     ) : exploitConfirmations.map(finding => (
-                      <div key={finding.id} style={{ fontSize: 12, background: "#231b12", padding: "5px 7px", borderRadius: 3, marginBottom: 4 }}>
+                      <div key={finding.id} style={{ fontSize: 12, background: `${theme.high}14`, border: `1px solid ${theme.high}44`, padding: "8px 10px", borderRadius: 8, marginBottom: 6 }}>
                         <b>{finding.title}</b>
                         {finding.target && <div style={{ color: theme.textDim }}>{finding.target}</div>}
                       </div>
@@ -1095,7 +1095,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                   <div style={{ marginBottom: 8, fontWeight: 600, color: theme.accent }}>🔐 Credentials / Access Obtained</div>
                   {loot.length === 0 ? <div style={{ color: theme.textDim }}>None. Successful vulnerability validation appears above; it does not imply that credentials, a session, a shell, or files were obtained.</div> :
                     loot.map((l, i) => (
-                      <div key={i} style={{ padding: "6px 8px", background: "#0f1623", marginBottom: 4, borderRadius: 4, fontFamily: "monospace", fontSize: 12 }}>
+                      <div key={i} style={{ padding: "9px 11px", background: theme.bg, border: `1px solid ${theme.border}`, marginBottom: 6, borderRadius: 8, fontFamily: "monospace", fontSize: 12 }}>
                         <b>{l.type}</b> {l.service ? `[${l.service}]` : ""} on {l.host || "?"}
                         {l.username && l.password && <> : <span style={{color: theme.green}}>{l.username}:{l.password}</span></>}
                         {l.details && <div style={{color: theme.textDim}}>{l.details}</div>}
@@ -1111,9 +1111,9 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 </div>
               )}
               {activeTab === "report" && (
-                <div style={{ padding: 24, fontFamily: "ui-monospace,SFMono-Regular,Menlo,Monaco,monospace", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", height: "100%", overflow: "auto", position: "relative" }}>
-                  <div style={{ position: "sticky", top: 0, background: theme.surfaceAlt, padding: "4px 8px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>Report</span>
+                <div className="aegis-dashboard-pane aegis-report" style={{ padding: 24, fontFamily: "ui-monospace,SFMono-Regular,Menlo,Monaco,monospace", fontSize: 13, lineHeight: 1.8, whiteSpace: "pre-wrap", height: "100%", overflow: "auto", position: "relative" }}>
+                  <div className="aegis-panel-heading" style={{ position: "sticky", top: 0, background: theme.surfaceAlt, padding: "4px 8px", marginBottom: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="aegis-panel-title">Report</span>
                     {agent.report && <button onClick={downloadReport} style={{ ...pillBtn(theme.accent), fontSize: 11 }}>Download .md</button>}
                   </div>
                   {agent.report || "Click REPORT to generate."}
@@ -1141,8 +1141,8 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                   {JSON.stringify(Object.fromEntries(Object.entries(agent.approval.params || {}).filter(([key]) => key !== "password")))}
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => { agent.send({ action: "approve" }); agent.setApproval(null); agent.setScanState("running"); }} style={{ flex: 1, padding: 8, background: theme.green, color: "#fff", border: "none", borderRadius: 4, fontSize: 12, fontWeight: 700 }}>✓ APPROVE</button>
-                  <button onClick={() => { agent.send({ action: "reject" }); agent.setApproval(null); agent.setScanState("running"); }} style={{ flex: 1, padding: 8, background: theme.critical, color: "#fff", border: "none", borderRadius: 4, fontSize: 12, fontWeight: 700 }}>✗ REJECT</button>
+                  <button onClick={() => { agent.send({ action: "approve" }); agent.setApproval(null); agent.setScanState("running"); }} style={{ flex: 1, padding: 8, background: theme.green, color: theme.bg, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>✓ APPROVE</button>
+                  <button onClick={() => { agent.send({ action: "reject" }); agent.setApproval(null); agent.setScanState("running"); }} style={{ flex: 1, padding: 8, background: theme.critical, color: theme.bg, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700 }}>✗ REJECT</button>
                 </div>
               </div>
             )}

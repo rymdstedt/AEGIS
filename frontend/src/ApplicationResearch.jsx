@@ -677,12 +677,12 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
       </div>
 
       {!desktopPickerAvailable && (
-        <div style={{ padding: "8px 18px", background: "#3b2f1f", color: "#fcd34d", fontSize: 12, borderBottom: "1px solid #5c4721" }}>
+        <div style={{ padding: "8px 18px", background: `${theme.medium}18`, color: theme.medium, fontSize: 12, borderBottom: `1px solid ${theme.medium}55` }}>
           Native artifact selection is available in the AEGIS desktop app. The browser development preview intentionally cannot read arbitrary local paths.
         </div>
       )}
       {error && (
-        <div role="alert" style={{ padding: "9px 18px", background: "#3b1f1f", color: "#fca5a5", fontSize: 12, borderBottom: "1px solid #713232" }}>{error}</div>
+        <div role="alert" style={{ padding: "9px 18px", background: `${theme.critical}18`, color: theme.critical, fontSize: 12, borderBottom: `1px solid ${theme.critical}55` }}>{error}</div>
       )}
       {notice && (
         <div role="status" style={{ padding: "9px 18px", background: `${theme.green}18`, color: theme.green, fontSize: 12, borderBottom: `1px solid ${theme.green}55` }}>{notice}</div>

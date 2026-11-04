@@ -90,6 +90,12 @@ button:disabled { cursor: not-allowed; }
 .aegis-dashboard-section-header { gap: 12px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--aegis-border); }
 .aegis-dashboard-section-title b { display: block; font-size: 18px; letter-spacing: -.02em; }
 .aegis-diagnostics-intro { margin: 16px 0 22px; color: var(--aegis-muted); }
+.aegis-dashboard-pane { padding: clamp(18px, 2.6vw, 30px) !important; }
+.aegis-panel-heading { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 10px 18px; padding: 0 0 16px; margin-bottom: 18px !important; border-bottom: 1px solid var(--aegis-border); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.aegis-panel-title { font-size: 20px !important; font-weight: 750 !important; letter-spacing: -.02em; line-height: 1.25; color: var(--aegis-text); }
+.aegis-dashboard-pane :is(h2, h3) { color: var(--aegis-text); }
+.aegis-dashboard-pane > div[style*="border-radius: 6px"] { border-radius: 11px !important; }
+.aegis-report .aegis-panel-heading { padding: 9px 12px !important; border: 1px solid var(--aegis-border); border-radius: 10px; z-index: 1; }
 
 .aegis-page { min-height: 100vh; padding: 0 !important; }
 .aegis-page-content { width: min(100%, 1200px); margin: 0 auto; padding: clamp(20px, 3vw, 36px) clamp(16px, 3vw, 36px) 64px; }

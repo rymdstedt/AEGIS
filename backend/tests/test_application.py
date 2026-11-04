@@ -2,6 +2,7 @@ import hashlib
 import io
 import json
 import os
+import sqlite3
 import struct
 import tarfile
 import tempfile
@@ -37,6 +38,12 @@ class ApplicationResearchTests(unittest.TestCase):
 
     def tearDown(self):
         self.temporary.cleanup()
+
+    def test_database_connection_is_closed_after_transaction(self):
+        with self.service.store._connect() as connection:
+            connection.execute("SELECT 1")
+        with self.assertRaises(sqlite3.ProgrammingError):
+            connection.execute("SELECT 1")
 
     def test_directory_import_is_private_persistent_and_secret_redacted(self):
         fixture_value = "live-value-that-must-never-leak"

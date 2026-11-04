@@ -135,7 +135,11 @@ class ScanRecoveryJournal:
         fd, name = tempfile.mkstemp(prefix=".scan-recovery-", dir=self.root)
         try:
             with os.fdopen(fd, "wb") as file:
-                os.fchmod(file.fileno(), 0o600)
+                fchmod = getattr(os, "fchmod", None)
+                if fchmod is not None:
+                    fchmod(file.fileno(), 0o600)
+                else:
+                    os.chmod(name, 0o600)
                 file.write(encoded)
                 file.flush()
                 os.fsync(file.fileno())

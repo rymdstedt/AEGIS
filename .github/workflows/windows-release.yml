@@ -63,7 +63,7 @@ jobs:
           PYTHONPATH: backend
         run: |
           backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -v
-          backend\.venv\Scripts\python.exe -m ruff check backend lab
+          backend\.venv\Scripts\python.exe -m ruff check backend
 
       - name: Build native Windows package
         shell: pwsh

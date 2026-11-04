@@ -174,7 +174,7 @@ class CommandBuilderTests(unittest.TestCase):
         self.assertNotIn("-I", command)
         self.assertIn("--insecure", command)
         self.assertIn("-D", command)
-        self.assertEqual(command[command.index("-o") + 1], "/dev/null")
+        self.assertEqual(command[command.index("-o") + 1], os.devnull)
 
     def test_windows_commands_use_native_ping_flags_and_null_device(self):
         with (

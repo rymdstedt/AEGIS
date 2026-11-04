@@ -1,3 +1,4 @@
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -42,8 +43,9 @@ class ScanRecoveryJournalTests(unittest.TestCase):
         self.assertNotIn("/reset", saved)
         self.assertNotIn("observed_ports", saved)
         self.assertNotIn("18080/tcp", saved)
-        self.assertEqual(self.journal.path.stat().st_mode & 0o777, 0o600)
-        self.assertEqual(self.journal.root.stat().st_mode & 0o777, 0o700)
+        if os.name != "nt":
+            self.assertEqual(self.journal.path.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(self.journal.root.stat().st_mode & 0o777, 0o700)
         restored = ScanRecoveryJournal(self.journal.root).list_interrupted()
         self.assertEqual(len(restored), 1)
         self.assertEqual(restored[0]["target"], "http://127.0.0.1:18080")
@@ -62,6 +64,12 @@ class ScanRecoveryJournalTests(unittest.TestCase):
         self.journal.record(self.scan_id, self.agent)
         self.assertEqual(self.journal.list_interrupted(), [])
 
+    def test_write_without_fchmod_retains_redacted_recovery_notice(self):
+        with patch("scan_recovery.os.fchmod", None, create=True):
+            self.journal.record(self.scan_id, self.agent)
+        self.assertNotIn("not-for-disk", self.journal.path.read_text())
+        self.assertEqual(len(self.journal.list_interrupted()), 1)
+
     def test_bad_or_expired_data_does_not_become_a_recovery_action(self):
         self.journal._ensure_root()
         self.journal.path.write_text('{"version":1,"entries":[{"scan_id":"scan_bad","target":"--script=bad"}]}')
@@ -75,5 +83,6 @@ class ScanRecoveryJournalTests(unittest.TestCase):
         with patch.dict("os.environ", {"AEGIS_DATA_DIR": str(broad_root)}):
             journal = ScanRecoveryJournal(default_recovery_root())
             journal.record(self.scan_id, self.agent)
-        self.assertEqual(broad_root.stat().st_mode & 0o777, 0o755)
-        self.assertEqual(journal.root.stat().st_mode & 0o777, 0o700)
+        if os.name != "nt":
+            self.assertEqual(broad_root.stat().st_mode & 0o777, 0o755)
+            self.assertEqual(journal.root.stat().st_mode & 0o777, 0o700)

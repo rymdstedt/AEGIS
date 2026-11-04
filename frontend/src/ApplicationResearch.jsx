@@ -649,7 +649,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
   const busy = importing || analyzing || deletingProject || advisoryLoading;
 
   return (
-    <div style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 7px; height: 7px; }
@@ -659,10 +659,10 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
         @keyframes aegis-spin { to { transform: rotate(360deg); } }
       `}</style>
 
-      <header style={{ height: 58, padding: "0 22px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${theme.border}`, background: "linear-gradient(180deg,#111827 0%,#0a0e17 100%)" }}>
+      <header style={{ height: 58, padding: "0 22px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${theme.border}`, background: `linear-gradient(180deg, ${theme.surface} 0%, ${theme.bg} 100%)` }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <HomeButton onClick={onBack} theme={theme} compact />
-          <div style={{ fontSize: 21, fontWeight: 800 }}>AEGIS</div>
+          <div style={{ fontSize: 21, fontWeight: 800 }}>AEGIS<span style={{ color: theme.high }}>.</span></div>
           <div style={{ width: 1, height: 22, background: theme.border }} />
           <div>
             <div style={{ fontSize: 14, fontWeight: 700 }}>Application Research</div>

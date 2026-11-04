@@ -157,7 +157,7 @@ export default function ExposureLive({ apiFetch, theme, onBack, onImport }) {
 
   const selected = mode === "owned" ? targets.trim() : query.trim();
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, padding: "20px clamp(12px, 4vw, 40px)", boxSizing: "border-box", fontFamily: theme.fontFamily }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <HomeButton onClick={onBack} theme={theme} style={{ marginBottom: 18 }} />
         <h1 style={{ fontSize: 24, margin: "0 0 8px" }}>Exposure Inventory</h1>

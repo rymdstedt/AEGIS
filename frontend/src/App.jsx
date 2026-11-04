@@ -38,12 +38,14 @@ function currentScanId() {
   return created;
 }
 
+// Hybrid Solutions brand palette (ocean / electric / poppy / merlot / charcoal)
 const theme = {
-  bg: "#0a0e17", surface: "#111827", surfaceAlt: "#1a2235", border: "#1e293b",
-  text: "#e2e8f0", textDim: "#64748b", accent: "#3b82f6",
-  accentGlow: "rgba(59,130,246,0.15)", critical: "#ef4444", high: "#f97316",
-  medium: "#eab308", low: "#3b82f6", info: "#6b7280", green: "#22c55e",
-  terminal: "#0d1117",
+  bg: "#161d33", surface: "#1d2542", surfaceAlt: "#232c52", border: "#333f6e",
+  text: "#eef1f8", textDim: "#9aa4c4", accent: "#0099d4",
+  accentGlow: "rgba(0,153,212,0.18)", critical: "#952f47", high: "#eb5e1d",
+  medium: "#f0b429", low: "#0099d4", info: "#6b7280", green: "#1fa97a",
+  terminal: "#10152b",
+  fontFamily: "'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 const sev_colors = { critical: theme.critical, high: theme.high, medium: theme.medium, low: theme.low, info: theme.info };
 
@@ -623,7 +625,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
   const latestStartError = [...agent.logs].reverse().find(item => item.type === "error")?.message;
 
   return (
-    <div style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: "-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 6px; }
@@ -638,13 +640,13 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: `1px solid ${theme.border}`, background: "linear-gradient(180deg,#111827 0%,#0a0e17 100%)", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: `1px solid ${theme.border}`, background: `linear-gradient(180deg, ${theme.surface} 0%, ${theme.bg} 100%)`, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" />
             <path d="M9 12l2 2 4-4" />
           </svg>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>AEGIS</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }}>AEGIS<span style={{ color: theme.high }}>.</span></div>
           <span style={{ color: theme.textDim, fontSize: 12 }}>AI Pentest Agent</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12 }}>

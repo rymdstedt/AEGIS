@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ApplicationResearch from "./ApplicationResearch";
 import ExposureInventory from "./ExposureInventory";
-import HomeButton from "./HomeButton";
+import NetworkGraphic from "./NetworkGraphic";
+import UiIcon from "./UiIcon";
+import WorkspaceShell from "./WorkspaceShell";
 
 const fragmentToken = new URLSearchParams(window.location.hash.slice(1)).get("token") || "";
 let sessionToken = "";
@@ -38,13 +40,13 @@ function currentScanId() {
   return created;
 }
 
-// Shared dark ocean palette for the AEGIS workspaces.
+// Hybrid Solutions foundation: ocean, electric, poppy, merlot, and charcoal.
 const theme = {
-  bg: "#111a2d", surface: "#1b2942", surfaceAlt: "#22334f", border: "#344a68",
-  text: "#f4f7fc", textDim: "#b1c0d6", accent: "#62cef0",
-  accentGlow: "rgba(98,206,240,0.16)", critical: "#f07896", high: "#ff9a6a",
-  medium: "#f5c66a", low: "#8adcf5", info: "#b1c0d6", green: "#77e0bc",
-  terminal: "#0d1728",
+  bg: "#07131f", surface: "#0c1a28", surfaceAlt: "#102233", border: "#293d50",
+  text: "#edf3f7", textDim: "#9cafbe", accent: "#0099d4",
+  accentGlow: "rgba(0,153,212,0.14)", critical: "#b5405f", high: "#eb5e1d",
+  medium: "#e1a93b", low: "#4fb7d6", info: "#9cafbe", green: "#35b78d",
+  terminal: "#06101a",
   fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 const sev_colors = { critical: theme.critical, high: theme.high, medium: theme.medium, low: theme.low, info: theme.info };
@@ -387,8 +389,7 @@ function EvidenceTrail({ snapshot, coverage, decision, onRetry, onContinue, onRe
   );
 }
 
-function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory }) {
-  const agent = useAgent();
+function NetworkAssessment({ agent, requestedView, onRequestedViewHandled, onOpenAssessment }) {
   const {
     loot,
     exploitationApproved,
@@ -414,6 +415,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
   const [scope, setScope] = useState("");
   const [activeTab, setActiveTab] = useState("terminal");
   const activeTabRef = useRef(null);
+  const configScrollRef = useRef(null);
   const [chatMsg, setChatMsg] = useState("");
   const [showConfig, setShowConfig] = useState(true);
   const [envStatus, setEnvStatus] = useState(null);
@@ -430,6 +432,21 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
   useEffect(() => {
     if (!showConfig) activeTabRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [activeTab, showConfig]);
+
+  useEffect(() => {
+    if (showConfig) configScrollRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [showConfig]);
+
+  useEffect(() => {
+    if (requestedView === "diagnostics") {
+      setActiveTab("diagnostics");
+      setShowConfig(false);
+      onRequestedViewHandled?.();
+    } else if (requestedView === "assessment") {
+      setShowConfig(true);
+      onRequestedViewHandled?.();
+    }
+  }, [requestedView, onRequestedViewHandled]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -624,13 +641,10 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
     URL.revokeObjectURL(url);
   };
 
-  const critC = agent.findings.filter(f => f.severity === "critical").length;
-  const highC = agent.findings.filter(f => f.severity === "high").length;
-  const medC = agent.findings.filter(f => f.severity === "medium").length;
   const latestStartError = [...agent.logs].reverse().find(item => item.type === "error")?.message;
 
   return (
-    <div className="aegis-app" style={{ background: theme.bg, color: theme.text, height: "100vh", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
+    <div className="aegis-app" style={{ background: theme.bg, color: theme.text, height: "100%", fontFamily: theme.fontFamily, display: "flex", flexDirection: "column" }}>
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 6px; }
@@ -644,73 +658,18 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
         button { cursor: pointer; font-family: inherit; }
       `}</style>
 
-      {/* Header */}
-      <div className="aegis-topbar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: `1px solid ${theme.border}`, background: theme.surface, flexShrink: 0 }}>
-        <div className="aegis-topbar-brand" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={theme.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l7 4v6c0 5-3.5 9-7 10-3.5-1-7-5-7-10V6l7-4z" />
-            <path d="M9 12l2 2 4-4" />
-          </svg>
-          <div style={{ fontSize: 22, fontWeight: 700 }}>AEGIS<span style={{ color: theme.high }}>.</span></div>
-          <span style={{ color: theme.textDim, fontSize: 12 }}>Security workspace</span>
-        </div>
-        <div className="aegis-topbar-status" style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <StatusDot color={agent.connected ? theme.green : theme.critical} pulse={agent.connected} />
-            {agent.connected ? "Connected" : "Disconnected"}
-          </span>
-          {!showConfig && agent.currentPhase && <span style={{ display: "flex", alignItems: "center", gap: 6 }}><StatusDot color={theme.accent} pulse /> Phase: <b>{agent.currentPhase}</b></span>}
-          {!showConfig && <span style={{ display: "flex", gap: 8 }}>
-            {critC > 0 && <span style={{ color: theme.critical, fontWeight: 700 }}>🔴 {critC}</span>}
-            {highC > 0 && <span style={{ color: theme.high, fontWeight: 700 }}>🟠 {highC}</span>}
-            {medC > 0 && <span style={{ color: theme.medium, fontWeight: 700 }}>🟡 {medC}</span>}
-          </span>}
-        </div>
-      </div>
-
       {/* Config */}
       {showConfig && (
-        <div className="aegis-home-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px 0" }}>
+        <div ref={configScrollRef} className="aegis-home-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "20px 0" }}>
           <div className="aegis-home-card" style={{ width: 560, padding: 32, background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: 12, animation: "slideIn 0.3s ease" }}>
-            <div role="tablist" className="aegis-home-nav" aria-label="Start menu" style={{ display: "flex", flexWrap: "wrap", gap: 4, margin: "-16px -16px 22px", padding: 4, background: theme.bg, borderRadius: 8 }}>
-              <button
-                role="tab"
-                aria-selected="true"
-                type="button"
-                style={{ flex: "1 1 115px", padding: "8px 12px", background: theme.accentGlow, color: theme.accent, border: `1px solid ${theme.accent}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
-              >
-                ⚡ New Engagement
-              </button>
-              <button
-                role="tab"
-                aria-selected="false"
-                type="button"
-                onClick={() => { setActiveTab("diagnostics"); setShowConfig(false); }}
-                style={{ flex: "1 1 115px", padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
-              >
-                🧰 Diagnostics & Tools
-              </button>
-              <button
-                role="tab"
-                aria-selected="false"
-                type="button"
-                onClick={onOpenApplicationResearch}
-                style={{ flex: "1 1 115px", padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
-              >
-                ◫ Application Research
-              </button>
-              <button
-                role="tab"
-                aria-selected="false"
-                type="button"
-                onClick={onOpenExposureInventory}
-                style={{ flex: "1 1 115px", padding: "8px 12px", background: "transparent", color: theme.textDim, border: `1px solid ${theme.border}`, borderRadius: 6, fontWeight: 700, fontSize: 11 }}
-              >
-                ◉ Exposure Inventory
-              </button>
+            <div className="aegis-assessment-heading">
+              <div className="aegis-section-eyebrow">Security assessment</div>
+              <h1 className="aegis-home-title">New assessment</h1>
+              <p className="aegis-home-note">Define the target, scope, and evidence boundaries before starting.</p>
             </div>
-            <h2 className="aegis-home-title" style={{ fontSize: 20, fontWeight: 700, marginBottom: 24 }}>New engagement</h2>
-            <p className="aegis-home-note">Define the target and scope, then choose how AEGIS should investigate. Every scan starts from the permissions you set here.</p>
+            <NetworkGraphic />
+            <div className="aegis-assessment-columns">
+              <div className="aegis-assessment-form">
 
             {recoveryPlan && <div role="status" style={{ padding: 12, marginBottom: 16, border: `1px solid ${theme.high}`, borderRadius: 6, background: `${theme.high}12`, fontSize: 12, lineHeight: 1.5 }}>
               <b>Previous scan was interrupted</b>
@@ -722,17 +681,17 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               </div>
             </div>}
 
-            <Field label="TARGET *">
+            <Field label="Target">
               <input value={target} onChange={e => setTarget(e.target.value)}
                 placeholder="192.168.1.100, example.com, my network, the router..."
                 style={inputStyle} />
             </Field>
 
-            <Field label="LOCAL LLM SERVER URL (LOOPBACK ONLY)">
+            <Field label="Local model server">
               <input value={lmUrl} onChange={e => setLmUrl(e.target.value)} placeholder="http://localhost:1234" style={inputStyle} />
             </Field>
 
-            <Field label={`MODEL ${models.length > 0 ? `(${models.length} available)` : ""}`}>
+            <Field label={`Model ${models.length > 0 ? `(${models.length} available)` : ""}`}>
               <div style={{ display: "flex", gap: 8 }}>
                 <select
                   value={model}
@@ -763,7 +722,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               </div>
             </Field>
 
-            <Field label="SCOPE NOTES / TCP PORTS">
+            <Field label="Scope and TCP ports">
               <textarea value={scope} onChange={e => setScope(e.target.value)} rows={2}
                 placeholder="e.g. 443  •  all ports  •  Exclude 10.0.0.5  •  investigate CVE-2025-40833"
                 style={{ ...inputStyle, resize: "vertical" }} />
@@ -778,9 +737,9 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               </div>
             </Field>
 
-            <Field label="AGENT MODE">
+            <Field label="Assessment mode">
               <div style={{ display: "flex", gap: 8 }}>
-                {[{ id: "autonomous", label: "🤖 Autonomous", desc: "Auto investigation + exploits" }, { id: "supervised", label: "👁️ Supervised", desc: "Approve exploits" }, { id: "manual", label: "🔒 Manual", desc: "Approve every tool" }].map(m => (
+                {[{ id: "autonomous", label: "Autonomous", desc: "Auto tools and exploits" }, { id: "supervised", label: "Supervised", desc: "Approve exploit actions" }, { id: "manual", label: "Manual", desc: "Approve every tool" }].map(m => (
                   <button key={m.id} onClick={() => setMode(m.id)} style={{ flex: 1, padding: "10px 8px", background: mode === m.id ? theme.accentGlow : theme.bg, border: `1px solid ${mode === m.id ? theme.accent : theme.border}`, borderRadius: 6, color: mode === m.id ? theme.accent : theme.textDim, fontSize: 13, fontWeight: 600, textAlign: "center" }}>
                     {m.label}<br /><span style={{ fontSize: 10, fontWeight: 400 }}>{m.desc}</span>
                   </button>
@@ -788,19 +747,19 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               </div>
             </Field>
 
-            <Field label="AI BRAIN">
+            <Field label="Analysis engine">
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <button
                   onClick={() => setUseAi(true)}
                   style={{ flex: 1, padding: "8px", background: useAi ? theme.accentGlow : theme.bg, border: `1px solid ${useAi ? theme.accent : theme.border}`, borderRadius: 6, color: useAi ? theme.accent : theme.textDim, fontSize: 12, fontWeight: 600 }}
                 >
-                  🧠 AI Mode (needs local LLM)
+                  Local model
                 </button>
                 <button
                   onClick={() => setUseAi(false)}
                   style={{ flex: 1, padding: "8px", background: !useAi ? theme.accentGlow : theme.bg, border: `1px solid ${!useAi ? theme.accent : theme.border}`, borderRadius: 6, color: !useAi ? theme.accent : theme.textDim, fontSize: 12, fontWeight: 600 }}
                 >
-                  🛠️ Preset Tools Only (no LLM)
+                  Deterministic tools
                 </button>
               </div>
               <div style={{ fontSize: 11, color: theme.textDim, marginTop: 4 }}>
@@ -808,7 +767,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               </div>
             </Field>
 
-            <Field label="PHASES">
+            <Field label="Assessment phases">
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {["recon", "web", "network", "osint", "exploit"].map(p => (
                   <button key={p} onClick={() => togglePhase(p)} style={{ padding: "6px 14px", background: phases.includes(p) ? theme.accentGlow : theme.bg, border: `1px solid ${phases.includes(p) ? theme.accent : theme.border}`, borderRadius: 6, color: phases.includes(p) ? theme.accent : theme.textDim, fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{p}</button>
@@ -817,7 +776,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
             </Field>
 
             <div style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 12, color: theme.textDim, marginBottom: 8, fontWeight: 700 }}>QUICK PRESETS</div>
+              <div className="aegis-field-label">Quick presets</div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 <button onClick={() => { setScope("light quick scan internal device"); setPhases(["recon", "network"]); setUseAi(false); }} style={{ padding: "7px 11px", fontSize: 12, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, borderRadius: 8, color: theme.text }}>Internal device</button>
                 <button onClick={() => { setScope("only web ports 80,443"); setPhases(["recon", "web"]); setUseAi(true); }} style={{ padding: "7px 11px", fontSize: 12, background: theme.surfaceAlt, border: `1px solid ${theme.border}`, borderRadius: 8, color: theme.text }}>Web app focus</button>
@@ -827,7 +786,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
 
             {envStatus && !envStatus.lm_studio?.reachable && (
               <div style={{ background: `${theme.critical}18`, color: theme.critical, padding: "8px 12px", borderRadius: 8, fontSize: 12, marginBottom: 12, border: `1px solid ${theme.critical}55` }}>
-                ⚠️ Local LLM provider not reachable at {lmUrl}. Start the provider and make the selected model available first.
+                Local model provider is not reachable at {lmUrl}. Start the provider and make the selected model available first.
               </div>
             )}
             {envStatus && envStatus.missing_tools?.length > 5 && (
@@ -854,8 +813,31 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700,
               }}
             >
-              {agent.scanState === "starting" ? "Loading selected model…" : agent.connected ? "⚡ LAUNCH SCAN" : "Waiting for local backend…"}
+              <UiIcon name="play" size={17} />
+              {agent.scanState === "starting" ? "Loading selected model…" : agent.connected ? "Start assessment" : "Waiting for local backend…"}
             </button>
+              </div>
+
+              <aside className="aegis-assessment-context">
+                <section>
+                  <h2>Environment</h2>
+                  <div className="aegis-context-row"><UiIcon name="status" /><span>Backend</span><strong className={agent.connected ? "is-ready" : "is-offline"}>{agent.connected ? "Connected" : "Offline"}</strong></div>
+                  <div className="aegis-context-row"><UiIcon name="model" /><span>Local model</span><strong className={model ? "is-ready" : ""}>{model ? "Ready" : "Not selected"}</strong></div>
+                </section>
+                <section>
+                  <h2>Current session</h2>
+                  <dl className="aegis-session-list">
+                    <div><dt>Status</dt><dd>{agent.scanState.replaceAll("_", " ")}</dd></div>
+                    <div><dt>Phase</dt><dd>{agent.currentPhase || "Not started"}</dd></div>
+                    <div><dt>Findings</dt><dd>{agent.findings.length}</dd></div>
+                  </dl>
+                </section>
+                <section className="aegis-boundary-note">
+                  <UiIcon name="shield" />
+                  <div><strong>Evidence boundaries</strong><p>Targets and active actions remain limited to the scope and approvals you set here.</p></div>
+                </section>
+              </aside>
+            </div>
           </div>
         </div>
       )}
@@ -869,7 +851,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
               {["terminal", "output", "evidence", "exploitation", "diagnostics", "report"].map(tab => {
                 const isActive = activeTab === tab;
                 return (
-                  <button key={tab} ref={isActive ? activeTabRef : null} role="tab" aria-selected={isActive} onClick={() => { setActiveTab(tab); if (tab === "evidence") agent.send({ action: "evidence" }); }} style={{
+                  <button key={tab} ref={isActive ? activeTabRef : null} role="tab" aria-selected={isActive} onClick={() => { setActiveTab(tab); if (tab === "evidence") agent.send({ action: "evidence" }); if (tab === "report") agent.send({ action: "report" }); }} style={{
                     padding: "8px 16px",
                     paddingBottom: isActive ? 6 : 8,
                     background: "transparent",
@@ -883,15 +865,14 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                     alignItems: "center",
                     boxSizing: "border-box"
                   }}>
-                    {tab === "exploitation" ? "💥 EXPLOITATION (gated)" : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                    {tab === "exploitation" ? "Exploitation · gated" : tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
                 );
               })}
-              <div style={{ marginLeft: "auto", display: "flex", gap: 8, padding: "6px 12px", alignItems: "center" }}>
+              <div className="aegis-dashboard-actions" style={{ marginLeft: "auto", display: "flex", gap: 8, padding: "6px 12px", alignItems: "center" }}>
                 {["running", "paused"].includes(agent.scanState) && <button onClick={() => agent.send({ action: "stop" })} style={pillBtn(theme.critical)}>■ STOP</button>}
-                <button onClick={() => { agent.send({ action: "report" }); setActiveTab("report"); }} style={pillBtn(theme.accent)}>📄 REPORT</button>
-                {agent.report && <button onClick={downloadReport} style={pillBtn(theme.green)}>⬇️ DL .md</button>}
-                <button onClick={async () => { if (await agent.newScan()) { setRecoveryPrepared(false); setConfirmedRecoveryConfig(""); setShowConfig(true); } }} style={pillBtn(theme.green)}>+ NEW</button>
+                {agent.report && <button onClick={downloadReport} style={pillBtn(theme.green)}>Download .md</button>}
+                <button onClick={async () => { if (await agent.newScan()) { setRecoveryPrepared(false); setConfirmedRecoveryConfig(""); setShowConfig(true); onOpenAssessment?.(); } }} style={pillBtn(theme.green)}>New assessment</button>
               </div>
             </div>
 
@@ -922,8 +903,8 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                 <div className="aegis-diagnostics" style={{ padding: 20, height: "100%", overflow: "auto", fontSize: 13 }}>
                   <div className="aegis-dashboard-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                     <div className="aegis-dashboard-section-title" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <HomeButton onClick={() => { setActiveTab("terminal"); setShowConfig(true); }} theme={theme} compact />
-                      <div><div className="aegis-page-kicker">AEGIS <span aria-hidden="true">/</span> WORKSPACE</div><b>Environment & Diagnostics</b></div>
+                      <UiIcon name="diagnostics" size={23} />
+                      <div><div className="aegis-section-eyebrow">Local environment</div><b>Environment and diagnostics</b></div>
                     </div>
                     <button onClick={refreshEnvironment} style={{ ...pillBtn(theme.accent), fontSize: 11 }}>Refresh</button>
                   </div>
@@ -1063,7 +1044,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                           onClick={() => approveFindingForExploitation(finding)}
                           style={pillBtn(theme.critical)}
                         >
-                          ⚠️ APPROVE MAPPED ACTIONS
+                          Approve mapped actions
                         </button>
                       </div>
                     ))}
@@ -1092,7 +1073,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                     ))}
                   </div>
 
-                  <div style={{ marginBottom: 8, fontWeight: 600, color: theme.accent }}>🔐 Credentials / Access Obtained</div>
+                  <div style={{ marginBottom: 8, fontWeight: 600, color: theme.accent }}>Credentials and access obtained</div>
                   {loot.length === 0 ? <div style={{ color: theme.textDim }}>None. Successful vulnerability validation appears above; it does not imply that credentials, a session, a shell, or files were obtained.</div> :
                     loot.map((l, i) => (
                       <div key={i} style={{ padding: "9px 11px", background: theme.bg, border: `1px solid ${theme.border}`, marginBottom: 6, borderRadius: 8, fontFamily: "monospace", fontSize: 12 }}>
@@ -1134,7 +1115,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
           <div className="aegis-dashboard-sidebar" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {agent.approval && (
               <div style={{ padding: 16, background: `${theme.high}11`, borderBottom: `1px solid ${theme.high}44`, animation: "slideIn 0.3s ease", flexShrink: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: theme.high, marginBottom: 8 }}>⚠️ APPROVAL REQUIRED</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: theme.high, marginBottom: 8 }}>Approval required</div>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{agent.approval.tool}</div>
                 <div style={{ fontSize: 11, color: theme.textDim, marginBottom: 12 }}>{agent.approval.reasoning}</div>
                 <div style={{ fontSize: 10, color: theme.textDim, marginBottom: 12, wordBreak: "break-all" }}>
@@ -1148,7 +1129,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
             )}
 
             <div style={{ padding: 16, borderBottom: `1px solid ${theme.border}`, flexShrink: 0 }}>
-              <div style={{ fontSize: 12, color: theme.textDim, fontWeight: 600, marginBottom: 8, letterSpacing: 1, textTransform: "uppercase" }}>📊 Scan Stats</div>
+              <div style={{ fontSize: 12, color: theme.textDim, fontWeight: 600, marginBottom: 8, letterSpacing: 1, textTransform: "uppercase" }}>Scan statistics</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {[
                   { l: "Status", v: agent.scanState.toUpperCase(), c: agent.scanState === "running" ? theme.green : agent.scanState === "paused" ? theme.high : agent.scanState === "complete" ? theme.accent : ["partial", "inconclusive"].includes(agent.scanState) ? theme.high : theme.textDim },
@@ -1166,7 +1147,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
 
             <div style={{ flex: 1, overflow: "auto" }}>
               <div style={{ padding: "10px 16px", borderBottom: `1px solid ${theme.border}`, background: theme.surfaceAlt }}>
-                <span style={{ color: theme.textDim, fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>🎯 Findings</span>
+                <span style={{ color: theme.textDim, fontSize: 12, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase" }}>Findings</span>
               </div>
               <div style={{ padding: 8 }}>
                 {agent.findings.length === 0 && <div style={{ padding: 24, textAlign: "center", color: ["inconclusive", "partial"].includes(agent.scanState) ? theme.high : theme.textDim, fontSize: 13 }}>{agent.scanState === "inconclusive" ? "Assessment incomplete — see Report for the network-path diagnosis." : agent.scanState === "partial" ? "No findings in completed checks; TCP discovery was incomplete. See Evidence and Report." : "No findings yet..."}</div>}
@@ -1188,7 +1169,7 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
                           onClick={() => approveFindingForExploitation(f)}
                           style={{ marginTop: 8, padding: "4px 10px", fontSize: 11, background: theme.critical, color: "white", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
                         >
-                          ⚠️ APPROVE FOR EXPLOITATION (requires explicit acceptance)
+                          Approve for exploitation (requires explicit acceptance)
                         </button>
                       )}
                     </div>
@@ -1204,27 +1185,54 @@ function NetworkAssessment({ onOpenApplicationResearch, onOpenExposureInventory 
 }
 
 export default function App() {
-  const [workspace, setWorkspace] = useState("network");
+  const agent = useAgent();
+  const [workspace, setWorkspace] = useState("assessment");
+  const [networkSection, setNetworkSection] = useState("assessment");
+  const [requestedView, setRequestedView] = useState(null);
+
+  const navigate = (destination) => {
+    if (destination === "assessment" || destination === "diagnostics") {
+      setWorkspace("assessment");
+      setNetworkSection(destination);
+      setRequestedView(destination);
+      return;
+    }
+    setWorkspace(destination);
+  };
+
+  let content;
   if (workspace === "exposure") {
-    return (
+    content = (
       <ExposureInventory
         apiFetch={apiFetch}
         theme={theme}
-        onBack={() => setWorkspace("network")}
       />
     );
-  }
-  if (workspace === "application") {
-    return (
+  } else if (workspace === "application") {
+    content = (
       <ApplicationResearch
         apiFetch={apiFetch}
         theme={theme}
-        onBack={() => setWorkspace("network")}
       />
     );
+  } else {
+    content = <NetworkAssessment
+      agent={agent}
+      requestedView={requestedView}
+      onRequestedViewHandled={() => setRequestedView(null)}
+      onOpenAssessment={() => setNetworkSection("assessment")}
+    />;
   }
-  return <NetworkAssessment
-    onOpenApplicationResearch={() => setWorkspace("application")}
-    onOpenExposureInventory={() => setWorkspace("exposure")}
-  />;
+
+  const activeNavigation = workspace === "assessment" ? networkSection : workspace;
+  return (
+    <WorkspaceShell
+      active={activeNavigation}
+      onNavigate={navigate}
+      connected={agent.connected}
+      phase={workspace === "assessment" ? agent.currentPhase : ""}
+    >
+      {content}
+    </WorkspaceShell>
+  );
 }

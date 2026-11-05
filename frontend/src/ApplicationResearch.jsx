@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import PageHeader from "./PageHeader";
+import UiIcon from "./UiIcon";
 
 function formatBytes(value) {
   const bytes = Number(value || 0);
@@ -715,7 +716,7 @@ export default function ApplicationResearch({ apiFetch, theme, onBack }) {
           {!project && !loading && (
             <div style={{ height: "100%", display: "grid", placeItems: "center" }}>
               <div style={{ maxWidth: 520, textAlign: "center", color: theme.textDim }}>
-                <div style={{ fontSize: 46, marginBottom: 12 }}>◫</div>
+                <UiIcon name="research" size={42} />
                 <div style={{ color: theme.text, fontSize: 18, fontWeight: 750, marginBottom: 8 }}>Start with an application artifact</div>
                 <div style={{ fontSize: 13, lineHeight: 1.7 }}>Choose a repository folder, ZIP/TAR bundle, Cisco IOS or IOS XE image, APK, IPA, JAR, EXE, DLL, DMG, PKG, or individual source file. Quick triage inventories one logical project and reports deterministic static evidence without loading the whole project into memory.</div>
               </div>
